@@ -1,0 +1,120 @@
+.contentEditor {
+  white-space: normal;
+  max-width: 800px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  background-color: #1a1a1a;
+  color: #fff;
+  height: 100vh;
+  padding: 20px;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+.contentControls {
+  margin-bottom: 24px;
+  padding: 16px;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+
+.textArea {
+  width: 100%;
+  padding: 8px;
+  margin-bottom: 8px;
+  background-color: #121212;
+  border: 1px solid #434343;
+  color: #fff;
+  border-radius: 4px;
+  resize: none;
+  min-height: 100px;
+
+  &::placeholder {
+    color: #666;
+  }
+
+  &.error {
+    border-color: red;
+  }
+}
+
+.errorText {
+  color: #ff4d4d;
+  font-size: 0.875rem;
+  margin-bottom: 12px;
+}
+
+.buttonGroup {
+  display: flex;
+  gap: 12px;
+}
+
+.contentDisplay {
+  flex-grow: 1;
+  padding: 16px;
+  border-radius: 4px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  position: relative;
+}
+
+.contentCard {
+  background-color: #1a1a1a;
+  border: 1px solid #434343;
+  border-radius: 4px;
+  padding: 16px;
+}
+
+.contentImage {
+  max-width: 100%;
+  max-height: 400px;
+  display: block;
+  margin: 12px 0;
+  border-radius: 4px;
+  object-fit: contain;
+}
+
+.fileContainer {
+  margin-top: 12px;
+  padding: 8px;
+  background-color: #121212;
+  border-radius: 4px;
+}
+
+.timestamp {
+  margin-top: 8px;
+  font-size: 0.8em;
+  color: #888;
+  text-align: right;
+}
+
+.pagination {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 12px;
+  margin-top: 12px;
+}
+
+.pageLink {
+  padding: 6px 10px;
+  border: 1px solid #444;
+  background-color: transparent;
+  color: #fff;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background-color: #333;
+  }
+
+  &.active {
+    background-color: #555;
+    font-weight: bold;
+  }
+}

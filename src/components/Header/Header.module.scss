@@ -1,0 +1,41 @@
+.header {
+  padding: 0 16px;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  border-bottom: 1px solid #303030;
+}
+
+.menuButton {
+  background: none;
+  border: none;
+  width: 64px;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  transition: all 0.3s ease;
+
+  &:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+  }
+
+  &:focus {
+    outline: none;
+  }
+}
+
+.icon {
+  width: 24px;
+  height: 24px;
+  fill: currentColor;
+}
+
+.icon {
+  transition: transform 0.3s ease;
+
+  .menuButton:hover & {
+    transform: scale(1.1);
+  }
+}
