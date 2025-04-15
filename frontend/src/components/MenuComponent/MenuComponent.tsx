@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import AppRoutes from "../../routes/routes";
 import { useAdmin } from "../../hooks/useAdmin";
 import styles from "./MenuComponent.module.scss";
 import Button from "../Button/Button";
+import getSections from "../../requests/sections.requests";
 
 interface MenuItem {
   key: string;
@@ -17,66 +18,57 @@ const MenuComponent: React.FC = () => {
   const [openKeys, setOpenKeys] = useState<string[]>(["study"]);
   const { isAdmin, login, logout } = useAdmin();
   const [password, setPassword] = useState("");
+  const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
 
   const navigate = useNavigate();
   const location = useLocation();
+
+  useEffect(() => {
+    const loadSections = async () => {
+      const res = await getSections();
+      const sections = res;
+
+      const transformed: MenuItem[] = [
+        {
+          key: "/",
+          label: "Главная",
+          onClick: () => navigate("/"),
+        },
+        {
+          key: "study",
+          label: "Обучение",
+          children: sections.map((section: any) => {
+            if (section.children) {
+              return {
+                key: section.key,
+                label: section.label,
+                children: section.children.map((child: any) => ({
+                  key: `/${section.key}/${child.key}`,
+                  label: child.label,
+                  onClick: () => navigate(`/${section.key}/${child.key}`),
+                })),
+              };
+            }
+            return {
+              key: `/${section.key}`,
+              label: section.label,
+              onClick: () => navigate(`/${section.key}`),
+            };
+          }),
+        },
+      ];
+
+      setMenuItems(transformed);
+    };
+
+    loadSections();
+  }, []);
 
   const handleOpenChange = (key: string) => {
     setOpenKeys((prev) =>
       prev.includes(key) ? prev.filter((k) => k !== key) : [...prev, key]
     );
   };
-
-  const menuItems: MenuItem[] = [
-    {
-      key: "/",
-      label: "Главная",
-      onClick: () => navigate("/"),
-    },
-    {
-      key: "study",
-      label: "Обучение",
-      children: [
-        {
-          key: "/tryhackme",
-          label: "TryHackMe",
-          onClick: () => navigate("/tryhackme"),
-        },
-        {
-          key: "algorithms",
-          label: "Алгоритмы",
-          children: [
-            {
-              key: "/algorithms/lab",
-              label: "Лабораторные работы",
-              onClick: () => navigate("/algorithms/lab"),
-            },
-            {
-              key: "/algorithms/notes",
-              label: "Конспекты",
-              onClick: () => navigate("/algorithms/notes"),
-            },
-          ],
-        },
-        {
-          key: "edpm",
-          label: "Архитектура ЭВМ",
-          children: [
-            {
-              key: "/edpm/lab",
-              label: "Лабораторные работы",
-              onClick: () => navigate("/edpm/lab"),
-            },
-            {
-              key: "/edpm/notes",
-              label: "Конспекты",
-              onClick: () => navigate("/edpm/notes"),
-            },
-          ],
-        },
-      ],
-    },
-  ];
 
   const renderMenuItems = (items: MenuItem[]) => {
     return (

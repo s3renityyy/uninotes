@@ -1,9 +1,8 @@
-import { useState, useRef, useEffect, ChangeEvent } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useState, useEffect, useRef, ChangeEvent } from "react";
 
 import { useAdmin } from "../../hooks/useAdmin";
-
-import sendToBackend from "../../requests/tryhackme.requests";
+import { sendToBackend } from "../../requests/content.requests";
+import getListOfUpdates from "../../requests/main.requests";
 
 import Button from "../Button/Button";
 import Modal from "../Modal/Modal";
@@ -18,7 +17,15 @@ export interface ContentItem {
   timestamp: number;
 }
 
-const ContentEditor = () => {
+type ContentEditorType = {
+  isEditable?: boolean;
+  updates?: ContentItem[];
+};
+
+const ContentEditor: React.FC<ContentEditorType> = ({
+  isEditable = true,
+  updates,
+}) => {
   const [content, setContent] = useState<ContentItem[]>([]);
   const [text, setText] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -27,14 +34,45 @@ const ContentEditor = () => {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const { isAdmin } = useAdmin();
 
-  const [pages, setPages] = useState<ContentItem[][]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const contentRef = useRef<HTMLDivElement>(null);
-  const [searchParams, setSearchParams] = useSearchParams();
-  const currentPage = parseInt(searchParams.get("page") || "1", 10);
+  const loaderRef = useRef<HTMLDivElement>(null);
 
-  const updatePage = (page: number) => {
-    setSearchParams({ page: String(page) }, { replace: true });
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          loadMoreItems();
+        }
+      },
+      { rootMargin: "200px" }
+    );
+
+    if (loaderRef.current) {
+      observer.observe(loaderRef.current);
+    }
+
+    return () => {
+      if (loaderRef.current) {
+        observer.unobserve(loaderRef.current);
+      }
+    };
+  }, [content]);
+
+  useEffect(() => {
+    if (updates) {
+      setContent(updates);
+    }
+  }, [updates]);
+
+  const loadMoreItems = async () => {
+    const updates = await getListOfUpdates();
+    if (updates) {
+      setContent((prev) => {
+        const existingIds = new Set(prev.map((item) => item.id));
+        const newItems = updates.filter((item) => !existingIds.has(item.id));
+        return [...prev, ...newItems];
+      });
+    }
   };
 
   const handleAddText = async () => {
@@ -96,104 +134,6 @@ const ContentEditor = () => {
     }
   };
 
-  useEffect(() => {
-    paginateContent();
-  }, [content]);
-
-  useEffect(() => {
-    if (contentRef.current) {
-      contentRef.current.scrollTop = 0;
-    }
-  }, [currentPage]);
-
-  const paginateContent = () => {
-    if (!contentRef.current) return;
-
-    const containerHeight = contentRef.current.clientHeight * 0.9;
-    const items: ContentItem[][] = [];
-    let page: ContentItem[] = [];
-    let heightSum = 0;
-
-    const dummy = document.createElement("div");
-    dummy.style.position = "absolute";
-    dummy.style.visibility = "hidden";
-    dummy.style.width = `${contentRef.current.clientWidth}px`;
-    dummy.className = styles.contentCard;
-    document.body.appendChild(dummy);
-
-    for (const item of content) {
-      dummy.innerHTML = "";
-
-      if (item.text) {
-        const p = document.createElement("p");
-        p.textContent = item.text;
-        dummy.appendChild(p);
-      } else if (item.image && typeof item.image === "string") {
-        const img = document.createElement("img");
-        img.src = item.image;
-        img.style.maxHeight = "400px";
-        dummy.appendChild(img);
-      } else if (item.file) {
-        const div = document.createElement("div");
-        div.textContent = `Файл: ${item.file.name}`;
-        dummy.appendChild(div);
-      }
-
-      const estimatedHeight = dummy.offsetHeight + 32;
-
-      if (heightSum + estimatedHeight > containerHeight && page.length > 0) {
-        items.push(page);
-        page = [];
-        heightSum = 0;
-      }
-
-      page.push(item);
-      heightSum += estimatedHeight;
-    }
-
-    if (page.length) items.push(page);
-    document.body.removeChild(dummy);
-    setPages(items);
-
-    if (currentPage > items.length && items.length > 0 && currentPage !== 1) {
-      updatePage(1);
-    }
-  };
-
-  const currentItems = pages[currentPage - 1] || [];
-
-  const renderPagination = () => {
-    const total = pages.length;
-    const pageLinks = [];
-    const visiblePages = 5;
-    let start = Math.max(1, currentPage - Math.floor(visiblePages / 2));
-    let end = Math.min(total, start + visiblePages - 1);
-
-    if (end - start < visiblePages - 1) {
-      start = Math.max(1, end - visiblePages + 1);
-    }
-
-    if (start > 1) pageLinks.push(<span key="start">...</span>);
-
-    for (let i = start; i <= end; i++) {
-      pageLinks.push(
-        <button
-          key={i}
-          className={`${styles.pageLink} ${
-            i === currentPage ? styles.active : ""
-          }`}
-          onClick={() => updatePage(i)}
-        >
-          {i}
-        </button>
-      );
-    }
-
-    if (end < total) pageLinks.push(<span key="end">...</span>);
-
-    return <div className={styles.pagination}>{pageLinks}</div>;
-  };
-
   return (
     <div className={styles.contentEditor}>
       <div className={styles.contentControls}>
@@ -209,7 +149,8 @@ const ContentEditor = () => {
             />
           </Modal>
         )}
-        {isAdmin ? (
+
+        {isAdmin && isEditable && (
           <div>
             <textarea
               rows={4}
@@ -245,15 +186,14 @@ const ContentEditor = () => {
               </Button>
             </div>
           </div>
-        ) : (
-          <></>
         )}
       </div>
 
-      <div ref={contentRef} className={styles.contentDisplay}>
-        {currentItems.map((item) => (
+      <div className={styles.contentDisplay}>
+        {content.map((item) => (
           <div key={item.id} className={styles.contentCard}>
             {item.text && <p className={styles.contentText}>{item.text}</p>}
+
             {item.image && typeof item.image === "string" && (
               <div className={styles.fileContainer}>
                 <img
@@ -280,6 +220,7 @@ const ContentEditor = () => {
                 />
               </div>
             )}
+
             {item.file && (
               <div className={styles.fileContainer}>
                 <p>Файл: {item.file.name}</p>
@@ -300,14 +241,13 @@ const ContentEditor = () => {
                 />
               </div>
             )}
+
             <div className={styles.timestamp}>
               {new Date(item.timestamp).toLocaleString()}
             </div>
           </div>
         ))}
       </div>
-
-      {pages.length > 1 && renderPagination()}
     </div>
   );
 };

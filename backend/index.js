@@ -1,14 +1,18 @@
 import express from "express";
+import mongoose from "mongoose";
+import dotenv from "dotenv";
+import postRoutes from "./routes/postRoutes.js";
 import Connection from "./database/db.js";
-import router from "./routes/api.js";
-import cors from "cors";
+
+dotenv.config();
 
 const app = express();
+app.use(express.json());
+app.use("/uploads", express.static("uploads"));
+app.use("/api/posts", postRoutes);
 
-const PORT = 9000;
-
-app.use(cors());
-app.use("/", router);
-
-app.listen(PORT, () => console.log("server is running on port", PORT));
 Connection();
+
+app.listen(process.env.PORT || 3000, () => {
+  console.log("Server is running");
+});
