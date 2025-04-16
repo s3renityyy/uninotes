@@ -22,8 +22,7 @@ const MenuComponent: React.FC = () => {
 
   useEffect(() => {
     const loadSections = async () => {
-      const res = await getSections();
-      const sections = res;
+      const sections = await getSections();
 
       const transformed: MenuItem[] = [
         {
@@ -34,24 +33,15 @@ const MenuComponent: React.FC = () => {
         {
           key: "study",
           label: "Обучение",
-          children: sections.map((section: any) => {
-            if (section.children) {
-              return {
-                key: section.key,
-                label: section.label,
-                children: section.children.map((child: any) => ({
-                  key: `/${section.key}/${child.key}`,
-                  label: child.label,
-                  onClick: () => navigate(`/${section.key}/${child.key}`),
-                })),
-              };
-            }
-            return {
-              key: `/${section.key}`,
-              label: section.label,
-              onClick: () => navigate(`/${section.key}`),
-            };
-          }),
+          children: sections.map((section: any) => ({
+            key: section.key,
+            label: section.label,
+            children: section.children.map((child: any) => ({
+              key: `/${section.key}/${child.key}`,
+              label: child.label,
+              onClick: () => navigate(`/${section.key}/${child.key}`),
+            })),
+          })),
         },
         {
           key: "admin-panel",
@@ -64,7 +54,7 @@ const MenuComponent: React.FC = () => {
     };
 
     loadSections();
-  }, []);
+  }, [navigate]);
 
   const handleOpenChange = (key: string) => {
     setOpenKeys((prev) =>
@@ -72,34 +62,32 @@ const MenuComponent: React.FC = () => {
     );
   };
 
-  const renderMenuItems = (items: MenuItem[]) => {
-    return (
-      <ul className={styles.menuList}>
-        {items.map((item) => (
-          <li key={item.key} className={styles.menuItem}>
-            <div
-              className={`${styles.menuLabel} ${
-                location.pathname === item.key ? styles.active : ""
-              }`}
-              onClick={item.onClick || (() => handleOpenChange(item.key))}
-            >
-              {item.label}
-              {item.children && (
-                <span className={styles.arrow}>
-                  {openKeys.includes(item.key) ? "▼" : "▶"}
-                </span>
-              )}
-            </div>
-            {item.children && openKeys.includes(item.key) && (
-              <div className={styles.submenu}>
-                {renderMenuItems(item.children)}
-              </div>
+  const renderMenuItems = (items: MenuItem[]) => (
+    <ul className={styles.menuList}>
+      {items.map((item) => (
+        <li key={item.key} className={styles.menuItem}>
+          <div
+            className={`${styles.menuLabel} ${
+              location.pathname === item.key ? styles.active : ""
+            }`}
+            onClick={item.onClick || (() => handleOpenChange(item.key))}
+          >
+            {item.label}
+            {item.children && (
+              <span className={styles.arrow}>
+                {openKeys.includes(item.key) ? "▼" : "▶"}
+              </span>
             )}
-          </li>
-        ))}
-      </ul>
-    );
-  };
+          </div>
+          {item.children && openKeys.includes(item.key) && (
+            <div className={styles.submenu}>
+              {renderMenuItems(item.children)}
+            </div>
+          )}
+        </li>
+      ))}
+    </ul>
+  );
 
   return (
     <div className={styles.layoutContainer}>

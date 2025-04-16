@@ -1,23 +1,13 @@
 const express = require("express");
 const router = express.Router();
 const Page = require("../models/Page.cjs");
+const { ObjectId } = require("mongoose").Types;
 
 router.get("/updates", async (req, res) => {
   try {
-    const sections = await Page.distinct("section");
-    let updates = [];
-    for (const sec of sections) {
-      const doc = await Page.findOne({ section: sec }).sort({ updatedAt: -1 });
-      if (doc) {
-        updates.push({
-          section: doc.section,
-          type: doc.type,
-          title: doc.title,
-          updatedAt: doc.updatedAt,
-        });
-      }
-    }
-    updates.sort((a, b) => b.updatedAt - a.updatedAt);
+    const updates = await Page.find({}, "section type title updatedAt").sort({
+      updatedAt: -1,
+    });
     res.json(updates);
   } catch (err) {
     res.status(500).json({ error: "Internal Server Error" });
@@ -28,18 +18,15 @@ router.get("/:section/:type", async (req, res) => {
   try {
     const { section, type } = req.params;
     const page = await Page.findOne({ section, type });
-    if (!page) {
-      return res.status(404).json({ error: "Page not found" });
-    }
+    if (!page) return res.status(404).json({ error: "Page not found" });
     res.json({
-      section: page.section,
-      type: page.type,
-      title: page.title,
-      content: page.content,
-      updatedAt: page.updatedAt,
+      ...page.toObject(),
+      content: page.content.map((item) => ({
+        ...item.toObject(),
+        id: item._id,
+      })),
     });
   } catch (err) {
-    console.error("Error fetching page:", err);
     res.status(500).json({ error: "Internal Server Error" });
   }
 });
@@ -60,6 +47,81 @@ router.post("/:section/:type", async (req, res) => {
       message: "Content added",
       page: updatedPage,
     });
+  } catch (err) {
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
+router.get("/links", async (req, res) => {
+  try {
+    const pages = await Page.find({}, "section type title").sort({
+      updatedAt: -1,
+    });
+
+    const sections = {};
+    pages.forEach(({ section, type, title }) => {
+      const sectionUpper = section.toUpperCase();
+      if (!sections[section]) {
+        sections[section] = { key: section, label: sectionUpper, children: [] };
+      }
+      sections[section].children.push({ key: type, label: title });
+    });
+
+    res.json(Object.values(sections));
+  } catch (err) {
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
+router.delete("/:section/:type/:contentId", async (req, res) => {
+  const { section, type, contentId } = req.params;
+  try {
+    const result = await Page.findOneAndUpdate(
+      { section, type },
+      { $pull: { content: { _id: new ObjectId(contentId) } } },
+      { new: true }
+    );
+    res.json(result);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
+router.put("/:section/:type/:contentId", async (req, res) => {
+  const { section, type, contentId } = req.params;
+  const { data, caption } = req.body;
+  try {
+    await Page.updateOne(
+      { section, type, "content._id": contentId },
+      { $set: { "content.$.data": data, "content.$.caption": caption } }
+    );
+    res.json({ message: "Обновлено" });
+  } catch (err) {
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
+router.delete("/:section/:type", async (req, res) => {
+  try {
+    await Page.deleteOne({
+      section: req.params.section,
+      type: req.params.type,
+    });
+    res.json({ message: "Роут удален" });
+  } catch (err) {
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
+router.put("/:section/:type", async (req, res) => {
+  const { newSection, newType, newTitle } = req.body;
+  try {
+    await Page.updateOne(
+      { section: req.params.section, type: req.params.type },
+      { $set: { section: newSection, type: newType, title: newTitle } }
+    );
+    res.json({ message: "Роут обновлен" });
   } catch (err) {
     res.status(500).json({ error: "Internal Server Error" });
   }

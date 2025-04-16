@@ -7,7 +7,7 @@ import styles from "./ContentEditor.module.scss";
 import Modal from "../Modal/Modal";
 
 export interface ContentItem {
-  id: number;
+  id: string;
   type: "image" | "file" | "text";
   src?: string;
   name?: string;
@@ -25,7 +25,6 @@ const ContentEditor: React.FC<ContentEditorType> = ({
   updates,
   onContentAdded,
 }) => {
-  const [contentItems, setContentItems] = useState<ContentItem[]>([]);
   const { section, type } = useParams<{ section: string; type: string }>();
 
   const [modalImage, setModalImage] = useState<string | null>(null);
@@ -68,42 +67,36 @@ const ContentEditor: React.FC<ContentEditorType> = ({
 
     const reader = new FileReader();
     reader.onload = async () => {
-      if (file.type.startsWith("image/") && typeof reader.result === "string") {
-        const imageSrc = reader.result;
-        const newItem: ContentItem = {
-          id: Date.now(),
-          type: "image",
-          src: imageSrc,
-        };
+      const fileSrc = reader.result;
+      if (!section || !type) return;
 
-        try {
-          if (!section || !type)
-            throw new Error("Section или type не определены.");
-          const response = await fetch(`/api/${section}/${type}`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ type: "image", url: imageSrc, caption: "" }),
-          });
-          if (!response.ok) {
-            throw new Error("Не удалось добавить изображение");
-          }
-          const result = await response.json();
-          console.log("Изображение успешно добавлено:", result);
-          setContentItems((prev) => [newItem, ...prev]);
-        } catch (err: any) {
-          console.error("Ошибка при отправке изображения:", err);
-        }
-      } else {
-        const newItem: ContentItem = {
-          id: Date.now(),
-          type: "file",
-          name: file.name,
-          file,
-        };
-        setContentItems((prev) => [newItem, ...prev]);
-      }
+      await fetch(`/api/${section}/${type}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          type: file.type.startsWith("image/") ? "image" : "file",
+          url: fileSrc,
+          caption: file.name,
+        }),
+      });
+
+      onContentAdded();
     };
     reader.readAsDataURL(file);
+  };
+
+  const deleteContent = async (contentId: string) => {
+    await fetch(`/api/${section}/${type}/${contentId}`, { method: "DELETE" });
+    onContentAdded();
+  };
+
+  const editContent = async (contentId: string, newData: string) => {
+    await fetch(`/api/${section}/${type}/${contentId}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ data: newData, caption: "" }),
+    });
+    onContentAdded();
   };
 
   return (
@@ -142,28 +135,66 @@ const ContentEditor: React.FC<ContentEditorType> = ({
         {updates.map((item) => (
           <div key={item.id} className={styles.contentCard}>
             {item.type === "text" && item.src && (
-              <div
-                className={styles.textBlock}
-                dangerouslySetInnerHTML={{ __html: item.src }}
-              />
+              <>
+                <div className={styles["contentCard-text"]}>
+                  <div dangerouslySetInnerHTML={{ __html: item.src }} />
+                  {localStorage.getItem("isAdmin") && (
+                    <div className={styles["contentCard-text-images"]}>
+                      <img
+                        className={styles["contentCard-text-images-trash"]}
+                        src="/trash.svg"
+                        alt=""
+                        onClick={() => deleteContent(item.id)}
+                      />
+                      <img
+                        src="/edit.svg"
+                        alt=""
+                        className={styles["contentCard-text-images-edit"]}
+                        onClick={() => {
+                          const newData = prompt("Измените текст:", item.src);
+                          if (newData) editContent(item.id, newData);
+                        }}
+                      ></img>
+                    </div>
+                  )}
+                </div>
+              </>
             )}
             {item.type === "image" && item.src && (
-              <img
-                src={item.src}
-                className={styles.contentImage}
-                onClick={() => setModalImage(item.src!)}
-                alt="User uploaded"
-              />
+              <div className={styles["contentCard-image"]}>
+                <img
+                  src={item.src}
+                  className={styles.contentImage}
+                  onClick={() => setModalImage(item.src!)}
+                  alt="User uploaded"
+                />
+                {localStorage.getItem("isAdmin") && (
+                  <div className={styles["contentCard-text-images"]}>
+                    <img
+                      className={styles["contentCard-text-images-trash"]}
+                      src="/trash.svg"
+                      alt=""
+                      onClick={() => deleteContent(item.id)}
+                    />
+                  </div>
+                )}
+              </div>
             )}
-            {item.type === "file" && item.file && (
-              <div>
-                <a
-                  className={styles.contentFile}
-                  href={URL.createObjectURL(item.file)}
-                  download={item.name}
-                >
+            {item.type === "file" && item.src && (
+              <div className={styles["contentCard-image"]}>
+                <a href={item.src} download={item.name}>
                   {item.name}
                 </a>
+                {localStorage.getItem("isAdmin") && (
+                  <div className={styles["contentCard-text-images"]}>
+                    <img
+                      className={styles["contentCard-text-images-trash"]}
+                      src="/trash.svg"
+                      alt=""
+                      onClick={() => deleteContent(item.id)}
+                    />
+                  </div>
+                )}
               </div>
             )}
           </div>

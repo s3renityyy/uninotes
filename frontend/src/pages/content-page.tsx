@@ -1,13 +1,16 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import ContentEditor from "../components/ContentEditor/ContentEditor";
-import { ContentItem } from "../components/ContentEditor/ContentEditor";
+import ContentEditor, {
+  ContentItem,
+} from "../components/ContentEditor/ContentEditor";
 
 type ContentBlock = {
+  _id: string;
   type: string;
   data?: string;
   url?: string;
   caption?: string;
+  dateAdded?: string;
 };
 
 type PageData = {
@@ -48,21 +51,22 @@ const ContentPage: React.FC = () => {
   if (error) return <div>Ошибка: {error}</div>;
   if (!page) return <div>Страница не найдена</div>;
 
-  const contentItems: ContentItem[] = page.content.map((block, index) => ({
-    id: index + Date.now(),
-    type: block.type as "text" | "image" | "file",
-    src: block.data || block.url || "",
-    name: block.caption || "",
-  }));
+  const contentItems: ContentItem[] = page.content
+    .slice(1)
+    .reverse()
+    .map((block) => ({
+      id: block._id,
+      type: block.type as "text" | "image" | "file",
+      src: block.data || block.url || "",
+      name: block.caption || "",
+    }));
 
   return (
     <div>
       <h1>{page.title}</h1>
-      <p>Раздел: {page.section}</p>
-      <p>Обновлено: {new Date(page.updatedAt).toLocaleString()}</p>
 
       <ContentEditor
-        isEditable={true}
+        isEditable={Boolean(localStorage.getItem("isAdmin"))}
         updates={contentItems}
         onContentAdded={fetchPage}
       />

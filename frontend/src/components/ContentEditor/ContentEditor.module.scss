@@ -82,6 +82,30 @@
   border: 1px solid #434343;
   border-radius: 4px;
   padding: 16px;
+
+  &-image {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+  }
+
+  &-text {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+
+    &-images {
+      display: flex;
+      flex-direction: column;
+      cursor: pointer;
+      gap: 3px;
+      &-trash,
+      &-edit {
+        width: 25px;
+        height: 25px;
+      }
+    }
+  }
 }
 
 .contentImage {
@@ -92,6 +116,7 @@
   margin-left: auto;
   border-radius: 4px;
   object-fit: contain;
+  cursor: pointer;
 }
 
 .download {
