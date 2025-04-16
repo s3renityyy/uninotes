@@ -10,7 +10,7 @@ const SubmitPage = () => {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ data }), // Отправляем данные
+        body: JSON.stringify({ data }),
       });
 
       const result = await response.json();

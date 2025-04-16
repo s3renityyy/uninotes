@@ -16,8 +16,6 @@ interface MenuItem {
 const MenuComponent: React.FC = () => {
   const [collapsed, setCollapsed] = useState<boolean>(false);
   const [openKeys, setOpenKeys] = useState<string[]>(["study"]);
-  const { isAdmin, login, logout } = useAdmin();
-  const [password, setPassword] = useState("");
   const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
 
   const navigate = useNavigate();
@@ -55,6 +53,11 @@ const MenuComponent: React.FC = () => {
               onClick: () => navigate(`/${section.key}`),
             };
           }),
+        },
+        {
+          key: "admin-panel",
+          label: "Панель админа",
+          onClick: () => navigate("/admin-panel"),
         },
       ];
 
@@ -111,40 +114,6 @@ const MenuComponent: React.FC = () => {
         >
           {collapsed ? "»" : "«"}
         </Button>
-        {!collapsed &&
-          (isAdmin ? (
-            <div className={styles.adminenabled}>
-              Вы администратор!
-              <Button
-                onClick={logout}
-                className={styles["admindisabled-button"]}
-              >
-                Выйти
-              </Button>
-            </div>
-          ) : (
-            <div className={styles.admindisabled}>
-              <div className={styles["admindisabled-label"]}>
-                Введите пароль
-              </div>
-              <input
-                placeholder="Пароль"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className={styles["admindisabled-input"]}
-              />
-              <Button
-                onClick={() => {
-                  const success = login(password);
-                  if (!success) alert("Неверный пароль");
-                }}
-                className={styles["admindisabled-button"]}
-              >
-                Войти
-              </Button>
-            </div>
-          ))}
       </aside>
       <main className={styles.mainContent}>
         <div className={styles.content}>

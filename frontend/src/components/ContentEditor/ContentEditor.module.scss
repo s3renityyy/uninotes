@@ -1,3 +1,7 @@
+.editorArea {
+  border: 1px solid #666;
+}
+
 .contentEditor {
   white-space: normal;
   max-width: 800px;
@@ -9,6 +13,14 @@
   height: 90vh;
   padding: 20px;
   box-sizing: border-box;
+
+  &-loadImage {
+    width: 200px;
+    background-color: inherit;
+    margin-bottom: 5px;
+    margin-left: auto;
+    margin-right: auto;
+  }
 }
 
 .contentControls {
@@ -16,6 +28,10 @@
   padding: 16px;
   border-radius: 4px;
   flex-shrink: 0;
+}
+
+.contentFile {
+  color: #7eaaff;
 }
 
 .textArea {
@@ -50,6 +66,7 @@
 }
 
 .contentDisplay {
+  margin-top: 15px;
   flex-grow: 1;
   padding: 16px;
   border-radius: 4px;
@@ -71,7 +88,8 @@
   max-width: 85%;
   max-height: 400px;
   display: block;
-  margin: 12px 0;
+  margin-right: auto;
+  margin-left: auto;
   border-radius: 4px;
   object-fit: contain;
 }
@@ -83,7 +101,8 @@
 }
 
 .fullImage {
-  border-radius: 12px;
+  max-width: 100%;
+  max-height: 700px;
 }
 
 .fileContainer {

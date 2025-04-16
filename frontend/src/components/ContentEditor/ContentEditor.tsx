@@ -1,253 +1,154 @@
-import { useState, useEffect, useRef, ChangeEvent } from "react";
-
-import { useAdmin } from "../../hooks/useAdmin";
-import { sendToBackend } from "../../requests/content.requests";
-import getListOfUpdates from "../../requests/main.requests";
-
-import Button from "../Button/Button";
+import { useEditor, EditorContent } from "@tiptap/react";
+import StarterKit from "@tiptap/starter-kit";
+import Image from "@tiptap/extension-image";
+import { useRef, useState, useEffect, ChangeEvent } from "react";
+import styles from "./ContentEditor.module.scss";
 import Modal from "../Modal/Modal";
 
-import styles from "./ContentEditor.module.scss";
-
 export interface ContentItem {
-  id: string;
-  text?: string;
+  id: number;
+  type: "image" | "file" | "text";
+  src?: string;
+  name?: string;
   file?: File;
-  image?: string | File;
-  timestamp: number;
 }
 
 type ContentEditorType = {
-  isEditable?: boolean;
-  updates?: ContentItem[];
+  isEditable: boolean;
+  updates: ContentItem[];
 };
 
 const ContentEditor: React.FC<ContentEditorType> = ({
-  isEditable = true,
+  isEditable,
   updates,
 }) => {
-  const [content, setContent] = useState<ContentItem[]>([]);
-  const [text, setText] = useState("");
-  const [error, setError] = useState<string | null>(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isImageModalOpen, setIsImageModalOpen] = useState(false);
-  const [selectedImage, setSelectedImage] = useState<string | null>(null);
-  const { isAdmin } = useAdmin();
-
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const loaderRef = useRef<HTMLDivElement>(null);
+  const [contentItems, setContentItems] = useState<ContentItem[]>(updates);
 
   useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting) {
-          loadMoreItems();
-        }
-      },
-      { rootMargin: "200px" }
-    );
-
-    if (loaderRef.current) {
-      observer.observe(loaderRef.current);
-    }
-
-    return () => {
-      if (loaderRef.current) {
-        observer.unobserve(loaderRef.current);
-      }
-    };
-  }, [content]);
-
-  useEffect(() => {
-    if (updates) {
-      setContent(updates);
-    }
+    setContentItems(updates);
   }, [updates]);
 
-  const loadMoreItems = async () => {
-    const updates = await getListOfUpdates();
-    if (updates) {
-      setContent((prev) => {
-        const existingIds = new Set(prev.map((item) => item.id));
-        const newItems = updates.filter((item) => !existingIds.has(item.id));
-        return [...prev, ...newItems];
-      });
-    }
-  };
+  const [modalImage, setModalImage] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
 
-  const handleAddText = async () => {
-    setError(null);
+  const editor = useEditor({
+    extensions: [StarterKit, Image],
+    content: "",
+  });
 
-    if (!text.trim()) {
-      setError("Поле не должно быть пустым");
-      return;
-    }
-
-    if (text.length > 3000) {
-      setError("Превышен лимит в 3000 символов");
-      return;
-    }
+  const handleSubmit = () => {
+    if (!editor) return;
+    const html = editor.getHTML();
+    if (!html.trim() || html === "<p></p>") return;
 
     const newItem: ContentItem = {
-      id: Date.now().toString(),
-      text,
-      timestamp: Date.now(),
+      id: Date.now(),
+      type: "text",
+      src: html,
     };
+    setContentItems((prev) => [newItem, ...prev]);
+    editor.commands.clearContent();
+  };
 
-    setIsSubmitting(true);
-    await sendToBackend(newItem);
-    setIsSubmitting(false);
-
-    setContent((prev) => [newItem, ...prev]);
-    setText("");
+  const handleUploadClick = () => {
+    fileInputRef.current?.click();
   };
 
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files?.length) {
-      const file = e.target.files[0];
+    const file = e.target.files?.[0];
+    if (!file) return;
 
-      if (file.type.startsWith("image/")) {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          const imageData = e.target?.result as string;
-
-          const newItem: ContentItem = {
-            id: Date.now().toString(),
-            image: imageData,
-            timestamp: Date.now(),
-          };
-
-          sendToBackend(newItem);
-          setContent((prev) => [newItem, ...prev]);
-        };
-        reader.readAsDataURL(file);
+    const reader = new FileReader();
+    reader.onload = () => {
+      if (file.type.startsWith("image/") && typeof reader.result === "string") {
+        const imageSrc = reader.result;
+        setContentItems((prev) => [
+          { id: Date.now(), type: "image", src: imageSrc },
+          ...prev,
+        ]);
       } else {
-        const newItem: ContentItem = {
-          id: Date.now().toString(),
-          file,
-          timestamp: Date.now(),
-        };
-
-        sendToBackend(newItem);
-        setContent((prev) => [newItem, ...prev]);
+        setContentItems((prev) => [
+          { id: Date.now(), type: "file", name: file.name, file },
+          ...prev,
+        ]);
       }
-    }
+    };
+    reader.readAsDataURL(file);
   };
 
   return (
     <div className={styles.contentEditor}>
-      <div className={styles.contentControls}>
-        {isImageModalOpen && selectedImage && (
-          <Modal
-            isOpen={isImageModalOpen}
-            closeModal={() => setIsImageModalOpen(false)}
+      {isEditable && (
+        <>
+          <button
+            className={styles["contentEditor-loadImage"]}
+            onClick={handleUploadClick}
           >
-            <img
-              src={selectedImage}
-              alt="Full view"
-              className={styles.fullImage}
-            />
-          </Modal>
-        )}
+            Загрузить изображение/файл
+          </button>
 
-        {isAdmin && isEditable && (
-          <div>
-            <textarea
-              rows={4}
-              value={text}
-              onChange={(e) => setText(e.target.value)}
-              placeholder="Введите текст..."
-              className={`${styles.textArea} ${error ? styles.error : ""}`}
-            />
-            {error && <div className={styles.errorText}>{error}</div>}
+          <EditorContent
+            editor={editor}
+            className={styles.editorArea}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && !e.shiftKey) {
+                e.preventDefault();
+                handleSubmit();
+              }
+            }}
+          />
 
-            <div className={styles.buttonGroup}>
-              <Button
-                onClick={handleAddText}
-                className={styles.addButton}
-                disabled={isSubmitting}
-              >
-                {isSubmitting ? "Отправка..." : "Добавить текст"}
-              </Button>
-
-              <input
-                type="file"
-                ref={fileInputRef}
-                onChange={handleFileChange}
-                accept="image/*,.pdf,.doc,.docx"
-                style={{ display: "none" }}
-              />
-
-              <Button
-                onClick={() => fileInputRef.current?.click()}
-                className={styles.uploadButton}
-              >
-                Загрузить файл/фото
-              </Button>
-            </div>
-          </div>
-        )}
-      </div>
+          <input
+            type="file"
+            accept="image/*,.pdf,.doc,.docx"
+            style={{ display: "none" }}
+            ref={fileInputRef}
+            onChange={handleFileChange}
+          />
+        </>
+      )}
 
       <div className={styles.contentDisplay}>
-        {content.map((item) => (
+        {contentItems.map((item) => (
           <div key={item.id} className={styles.contentCard}>
-            {item.text && <p className={styles.contentText}>{item.text}</p>}
+            {item.type === "text" && item.src && (
+              <div
+                className={styles.textBlock}
+                dangerouslySetInnerHTML={{ __html: item.src }}
+              />
+            )}
 
-            {item.image && typeof item.image === "string" && (
-              <div className={styles.fileContainer}>
+            {item.type === "image" && item.src && (
+              <>
                 <img
-                  src={item.image}
-                  alt="Uploaded content"
+                  src={item.src}
                   className={styles.contentImage}
-                  onClick={() => {
-                    setSelectedImage(item.image as string);
-                    setIsImageModalOpen(true);
-                  }}
+                  onClick={() => setModalImage(item.src!)}
+                  alt="User uploaded"
                 />
-                <img
-                  src="/download.svg"
-                  alt="Download"
-                  className={styles.download}
-                  onClick={() => {
-                    const link = document.createElement("a");
-                    link.href = item.image as string;
-                    link.download = "image.jpg";
-                    document.body.appendChild(link);
-                    link.click();
-                    document.body.removeChild(link);
-                  }}
-                />
-              </div>
+              </>
             )}
 
-            {item.file && (
-              <div className={styles.fileContainer}>
-                <p>Файл: {item.file.name}</p>
-                <img
-                  src="/download.svg"
-                  alt="Download"
-                  className={styles.download}
-                  onClick={() => {
-                    const url = URL.createObjectURL(item.file!);
-                    const link = document.createElement("a");
-                    link.href = url;
-                    link.download = item.file!.name;
-                    document.body.appendChild(link);
-                    link.click();
-                    document.body.removeChild(link);
-                    URL.revokeObjectURL(url);
-                  }}
-                />
+            {item.type === "file" && item.file && (
+              <div>
+                <a
+                  className={styles.contentFile}
+                  href={URL.createObjectURL(item.file)}
+                  download={item.name}
+                >
+                  {item.name}
+                </a>
               </div>
             )}
-
-            <div className={styles.timestamp}>
-              {new Date(item.timestamp).toLocaleString()}
-            </div>
           </div>
         ))}
       </div>
+
+      {modalImage && (
+        <Modal isOpen={true} closeModal={() => setModalImage(null)}>
+          <img src={modalImage} className={styles.fullImage} alt="Modal view" />
+        </Modal>
+      )}
     </div>
   );
 };
