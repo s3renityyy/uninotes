@@ -22,9 +22,10 @@ mongoose
   .catch((err) => console.error(err));
 
 app.use("/api", apiRoutes);
-app.use(express.static(path.join(__dirname, "/frontend/dist")));
-app.get(/.*/, (req, res) => {
-  res.sendFile(path.join(__dirname, "frontend", "dist", "index.html"));
+const staticPath = path.join(__dirname, "..", "frontend", "dist");
+app.use(express.static(staticPath));
+app.use((req, res) => {
+  res.sendFile(path.join(staticPath, "index.html"));
 });
 
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
