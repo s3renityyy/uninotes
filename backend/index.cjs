@@ -1,20 +1,29 @@
+require("dotenv").config();
 const express = require("express");
 const mongoose = require("mongoose");
+const path = require("path");
+const helmet = require("helmet");
+const cors = require("cors");
+const rateLimit = require("express-rate-limit");
 const apiRoutes = require("./routes/api.cjs");
-const app = express();
-const PORT = process.env.PORT;
 
+const app = express();
+const PORT = process.env.PORT || 9000;
+
+app.use(helmet());
+app.use(cors({ origin: process.env.FRONTEND_URL || true }));
+app.use(rateLimit({ windowMs: 15 * 60 * 1000, max: 100 }));
 app.use(express.json());
 
 mongoose
-  .connect(
-    "mongodb+srv://Uninotes:dowahjdiuwahdiuh821y3e8qhwsidha@uninotes.f0rahbp.mongodb.net/"
-  )
+  .connect(process.env.MONGO_URI)
   .then(() => console.log("Connected to MongoDB"))
   .catch((err) => console.error(err));
 
 app.use("/api", apiRoutes);
+app.use(express.static(path.join(__dirname, "frontend", "dist")));
+app.get("*", (req, res) =>
+  res.sendFile(path.join(__dirname, "frontend", "dist", "index.html"))
+);
 
-app.listen(9000, () => {
-  console.log(`Server running on port ${9000}`);
-});
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

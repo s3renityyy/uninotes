@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 
-const ADMIN_PASSWORD = "supersecret";
+const ADMIN_PASSWORD = import.meta.env.ADMIN_KEY;
 
 export const useAdmin = () => {
   const [isAdmin, setIsAdmin] = useState<boolean>(false);

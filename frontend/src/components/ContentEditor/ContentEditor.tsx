@@ -1,7 +1,7 @@
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Image from "@tiptap/extension-image";
-import { useRef, useState, useEffect, ChangeEvent } from "react";
+import { useRef, useState, ChangeEvent } from "react";
 import { useParams } from "react-router-dom";
 import styles from "./ContentEditor.module.scss";
 import Modal from "../Modal/Modal";
