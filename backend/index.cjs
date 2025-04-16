@@ -4,16 +4,11 @@ const apiRoutes = require("./routes/api.cjs");
 const app = express();
 const PORT = process.env.PORT;
 
-app.use(express.json()); // Для парсинга JSON-запросов
+app.use(express.json());
 
-// Подключение к MongoDB (замените URL на свой)
 mongoose
   .connect(
-    "mongodb+srv://Uninotes:dowahjdiuwahdiuh821y3e8qhwsidha@uninotes.f0rahbp.mongodb.net/",
-    {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    }
+    "mongodb+srv://Uninotes:dowahjdiuwahdiuh821y3e8qhwsidha@uninotes.f0rahbp.mongodb.net/"
   )
   .then(() => console.log("Connected to MongoDB"))
   .catch((err) => console.error(err));

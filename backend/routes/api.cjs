@@ -2,7 +2,6 @@ const express = require("express");
 const router = express.Router();
 const Page = require("../models/Page.cjs");
 
-// GET /api/updates – получить последние обновления по разделам
 router.get("/updates", async (req, res) => {
   try {
     const sections = await Page.distinct("section");
@@ -25,12 +24,13 @@ router.get("/updates", async (req, res) => {
   }
 });
 
-// GET /api/:section/:type – получить контент страницы
 router.get("/:section/:type", async (req, res) => {
   try {
     const { section, type } = req.params;
     const page = await Page.findOne({ section, type });
-    if (!page) return res.status(404).json({ error: "Page not found" });
+    if (!page) {
+      return res.status(404).json({ error: "Page not found" });
+    }
     res.json({
       section: page.section,
       type: page.type,
@@ -39,14 +39,14 @@ router.get("/:section/:type", async (req, res) => {
       updatedAt: page.updatedAt,
     });
   } catch (err) {
+    console.error("Error fetching page:", err);
     res.status(500).json({ error: "Internal Server Error" });
   }
 });
 
-// POST /api/:section/:type – добавить новый блок контента на страницу (создаст документ, если его нет)
 router.post("/:section/:type", async (req, res) => {
   const { section, type } = req.params;
-  const newBlock = req.body; // данные нового блока контента (например, { type: "text", data: "Новый блок" })
+  const newBlock = req.body;
   try {
     const updatedPage = await Page.findOneAndUpdate(
       { section, type },

@@ -2,6 +2,7 @@ import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Image from "@tiptap/extension-image";
 import { useRef, useState, useEffect, ChangeEvent } from "react";
+import { useParams } from "react-router-dom";
 import styles from "./ContentEditor.module.scss";
 import Modal from "../Modal/Modal";
 
@@ -16,17 +17,16 @@ export interface ContentItem {
 type ContentEditorType = {
   isEditable: boolean;
   updates: ContentItem[];
+  onContentAdded: () => void;
 };
 
 const ContentEditor: React.FC<ContentEditorType> = ({
   isEditable,
   updates,
+  onContentAdded,
 }) => {
-  const [contentItems, setContentItems] = useState<ContentItem[]>(updates);
-
-  useEffect(() => {
-    setContentItems(updates);
-  }, [updates]);
+  const [contentItems, setContentItems] = useState<ContentItem[]>([]);
+  const { section, type } = useParams<{ section: string; type: string }>();
 
   const [modalImage, setModalImage] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
@@ -36,41 +36,71 @@ const ContentEditor: React.FC<ContentEditorType> = ({
     content: "",
   });
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!editor) return;
     const html = editor.getHTML();
     if (!html.trim() || html === "<p></p>") return;
 
-    const newItem: ContentItem = {
-      id: Date.now(),
-      type: "text",
-      src: html,
-    };
-    setContentItems((prev) => [newItem, ...prev]);
-    editor.commands.clearContent();
+    try {
+      if (!section || !type) throw new Error("Section или type не определены.");
+
+      const response = await fetch(`/api/${section}/${type}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ type: "text", data: html }),
+      });
+      if (!response.ok) throw new Error("Не удалось добавить контент");
+
+      editor.commands.clearContent();
+      await onContentAdded();
+    } catch (err: any) {
+      console.error("Ошибка при отправке контента:", err);
+    }
   };
 
   const handleUploadClick = () => {
     fileInputRef.current?.click();
   };
 
-  const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
     const reader = new FileReader();
-    reader.onload = () => {
+    reader.onload = async () => {
       if (file.type.startsWith("image/") && typeof reader.result === "string") {
         const imageSrc = reader.result;
-        setContentItems((prev) => [
-          { id: Date.now(), type: "image", src: imageSrc },
-          ...prev,
-        ]);
+        const newItem: ContentItem = {
+          id: Date.now(),
+          type: "image",
+          src: imageSrc,
+        };
+
+        try {
+          if (!section || !type)
+            throw new Error("Section или type не определены.");
+          const response = await fetch(`/api/${section}/${type}`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ type: "image", url: imageSrc, caption: "" }),
+          });
+          if (!response.ok) {
+            throw new Error("Не удалось добавить изображение");
+          }
+          const result = await response.json();
+          console.log("Изображение успешно добавлено:", result);
+          setContentItems((prev) => [newItem, ...prev]);
+        } catch (err: any) {
+          console.error("Ошибка при отправке изображения:", err);
+        }
       } else {
-        setContentItems((prev) => [
-          { id: Date.now(), type: "file", name: file.name, file },
-          ...prev,
-        ]);
+        const newItem: ContentItem = {
+          id: Date.now(),
+          type: "file",
+          name: file.name,
+          file,
+        };
+        setContentItems((prev) => [newItem, ...prev]);
       }
     };
     reader.readAsDataURL(file);
@@ -109,7 +139,7 @@ const ContentEditor: React.FC<ContentEditorType> = ({
       )}
 
       <div className={styles.contentDisplay}>
-        {contentItems.map((item) => (
+        {updates.map((item) => (
           <div key={item.id} className={styles.contentCard}>
             {item.type === "text" && item.src && (
               <div
@@ -117,18 +147,14 @@ const ContentEditor: React.FC<ContentEditorType> = ({
                 dangerouslySetInnerHTML={{ __html: item.src }}
               />
             )}
-
             {item.type === "image" && item.src && (
-              <>
-                <img
-                  src={item.src}
-                  className={styles.contentImage}
-                  onClick={() => setModalImage(item.src!)}
-                  alt="User uploaded"
-                />
-              </>
+              <img
+                src={item.src}
+                className={styles.contentImage}
+                onClick={() => setModalImage(item.src!)}
+                alt="User uploaded"
+              />
             )}
-
             {item.type === "file" && item.file && (
               <div>
                 <a

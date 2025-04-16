@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import AppRoutes from "../../routes/routes";
-import { useAdmin } from "../../hooks/useAdmin";
 import styles from "./MenuComponent.module.scss";
 import Button from "../Button/Button";
 import getSections from "../../requests/sections.requests";

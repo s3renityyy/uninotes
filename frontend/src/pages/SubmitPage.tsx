@@ -5,7 +5,7 @@ const SubmitPage = () => {
 
   const handleSubmit = async () => {
     try {
-      const response = await fetch("http://localhost:3000/submit", {
+      const response = await fetch("http://localhost:9000/submit", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
