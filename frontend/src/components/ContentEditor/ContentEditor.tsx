@@ -99,6 +99,17 @@ const ContentEditor: React.FC<ContentEditorType> = ({
     onContentAdded();
   };
 
+  const downloadFile = (url?: string, fileName?: string) => {
+    if (!url || !fileName) return;
+
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = fileName;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   return (
     <div className={styles.contentEditor}>
       {isEditable && (
@@ -172,6 +183,12 @@ const ContentEditor: React.FC<ContentEditorType> = ({
                   <div className={styles["contentCard-text-images"]}>
                     <img
                       className={styles["contentCard-text-images-trash"]}
+                      src="/download.svg"
+                      alt=""
+                      onClick={() => downloadFile(item.src, item.name)}
+                    />
+                    <img
+                      className={styles["contentCard-text-images-trash"]}
                       src="/trash.svg"
                       alt=""
                       onClick={() => deleteContent(item.id)}
@@ -187,6 +204,12 @@ const ContentEditor: React.FC<ContentEditorType> = ({
                 </a>
                 {localStorage.getItem("isAdmin") && (
                   <div className={styles["contentCard-text-images"]}>
+                    <img
+                      className={styles["contentCard-text-images-trash"]}
+                      src="/download.svg"
+                      alt=""
+                      onClick={() => downloadFile(item.src, item.name)}
+                    />
                     <img
                       className={styles["contentCard-text-images-trash"]}
                       src="/trash.svg"

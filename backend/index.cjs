@@ -9,7 +9,7 @@ const apiRoutes = require("./routes/api.cjs");
 
 const app = express();
 const PORT = process.env.PORT || 9000;
-const MONGODP_URI = process.env.MONGODP_URI;
+const MONGODB_URI = process.env.MONGODB_URI;
 
 app.use(helmet());
 app.use(cors({ origin: process.env.FRONTEND_URL || true }));
@@ -17,7 +17,7 @@ app.use(rateLimit({ windowMs: 15 * 60 * 1000, max: 100 }));
 app.use(express.json());
 
 mongoose
-  .connect(MONGODP_URI)
+  .connect(MONGODB_URI)
   .then(() => console.log("Connected to MongoDB"))
   .catch((err) => console.error(err));
 
