@@ -1,0 +1,107 @@
+.header {
+  height: 75px;
+  border-bottom: 2px solid #131416;
+  background-color: #101114;
+  text-align: center;
+  font-size: 30px;
+  padding-top: 10px;
+}
+
+.route-form {
+  display: flex;
+  margin-left: auto;
+  margin-right: auto;
+  gap: 15px;
+
+  input {
+    height: 50px;
+    border-radius: 10px;
+    padding-left: 5px;
+  }
+
+  button {
+    height: 50px;
+    width: 215px;
+    padding: 5px;
+  }
+}
+
+.routeItem {
+  display: flex;
+  gap: 15px;
+  input {
+    height: 50px;
+    border-radius: 10px;
+    padding-left: 5px;
+  }
+}
+
+.admin {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  margin-top: 5vh;
+
+  &-routes {
+    display: flex;
+    flex-direction: column;
+    margin-left: auto;
+    margin-right: auto;
+    gap: 20px;
+
+    &-list {
+      &-item {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+        min-height: 55vh;
+        overflow-y: auto;
+      }
+    }
+  }
+
+  &-form {
+    width: 275px;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 5vh;
+    &-disabled {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      justify-content: center;
+      align-items: center;
+      padding-top: &-label {
+        text-align: center;
+      }
+
+      &-input {
+        width: 200px;
+        height: 50px;
+        margin-left: auto;
+        margin-right: auto;
+        border-radius: 10px;
+        padding-left: 10px;
+        ::placeholder {
+        }
+      }
+
+      &-button {
+        width: 200px;
+        height: 50px;
+        margin-left: auto;
+        margin-right: auto;
+
+        border-radius: 10px;
+        padding: 5px;
+      }
+    }
+
+    &-enabled {
+      display: flex;
+      flex-direction: column;
+      text-align: center;
+      gap: 10px;
+    }
+  }
+}

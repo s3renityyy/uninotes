@@ -4,6 +4,7 @@ import ContentEditor, {
   ContentItem,
 } from "../../components/ContentEditor/ContentEditor";
 import styles from "./content-page.module.scss";
+import RequireAuthAdmin from "../../components/RequireAuthAdmin";
 
 type ContentBlock = {
   _id: string;
@@ -65,12 +66,13 @@ const ContentPage: React.FC = () => {
   return (
     <div>
       <header className={styles.header}>{page.title}</header>
-
-      <ContentEditor
-        isEditable={Boolean(localStorage.getItem("isAdmin"))}
-        updates={contentItems}
-        onContentAdded={fetchPage}
-      />
+      <RequireAuthAdmin>
+        <ContentEditor
+          isEditable={Boolean(localStorage.getItem("isAdmin"))}
+          updates={contentItems}
+          onContentAdded={fetchPage}
+        />
+      </RequireAuthAdmin>
     </div>
   );
 };

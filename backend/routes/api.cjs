@@ -2,6 +2,36 @@ const express = require("express");
 const router = express.Router();
 const Page = require("../models/Page.cjs");
 const { ObjectId } = require("mongoose").Types;
+const isAdminMiddleware = require("../middleware/adminAuth.cjs");
+const jwt = require("jsonwebtoken");
+
+router.get("/admin/me", isAdminMiddleware, (req, res) => {
+  res.json({ ok: true });
+});
+
+router.post("/admin/login", (req, res) => {
+  const { password } = req.body;
+  if (password === process.env.ADMIN_KEY) {
+    const tokenAdmin = jwt.sign(
+      { role: "admin" },
+      process.env.JWT_SECRET_ADMIN,
+      {
+        expiresIn: "1h",
+      }
+    );
+    res.cookie("tokenAdmin", tokenAdmin, {
+      httpOnly: true,
+      secure: true,
+      sameSite: "strict",
+    });
+    return res.json({ success: true });
+  }
+  res.status(401).json({ success: false });
+});
+
+router.post("/admin/logout", isAdminMiddleware, (req, res) => {
+  res.clearCookie("tokenAdmin").json({ message: "Выход выполнен" });
+});
 
 router.get("/updates", async (req, res) => {
   try {
@@ -31,7 +61,7 @@ router.get("/:section/:type", async (req, res) => {
   }
 });
 
-router.post("/:section/:type", async (req, res) => {
+router.post("/:section/:type", isAdminMiddleware, async (req, res) => {
   const { section, type } = req.params;
   const newBlock = req.body;
   try {
@@ -73,36 +103,44 @@ router.get("/links", async (req, res) => {
   }
 });
 
-router.delete("/:section/:type/:contentId", async (req, res) => {
-  const { section, type, contentId } = req.params;
-  try {
-    const result = await Page.findOneAndUpdate(
-      { section, type },
-      { $pull: { content: { _id: new ObjectId(contentId) } } },
-      { new: true }
-    );
-    res.json(result);
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Internal Server Error" });
+router.delete(
+  "/:section/:type/:contentId",
+  isAdminMiddleware,
+  async (req, res) => {
+    const { section, type, contentId } = req.params;
+    try {
+      const result = await Page.findOneAndUpdate(
+        { section, type },
+        { $pull: { content: { _id: new ObjectId(contentId) } } },
+        { new: true }
+      );
+      res.json(result);
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ error: "Internal Server Error" });
+    }
   }
-});
+);
 
-router.put("/:section/:type/:contentId", async (req, res) => {
-  const { section, type, contentId } = req.params;
-  const { data, caption } = req.body;
-  try {
-    await Page.updateOne(
-      { section, type, "content._id": contentId },
-      { $set: { "content.$.data": data, "content.$.caption": caption } }
-    );
-    res.json({ message: "Обновлено" });
-  } catch (err) {
-    res.status(500).json({ error: "Internal Server Error" });
+router.put(
+  "/:section/:type/:contentId",
+  isAdminMiddleware,
+  async (req, res) => {
+    const { section, type, contentId } = req.params;
+    const { data, caption } = req.body;
+    try {
+      await Page.updateOne(
+        { section, type, "content._id": contentId },
+        { $set: { "content.$.data": data, "content.$.caption": caption } }
+      );
+      res.json({ message: "Обновлено" });
+    } catch (err) {
+      res.status(500).json({ error: "Internal Server Error" });
+    }
   }
-});
+);
 
-router.delete("/:section/:type", async (req, res) => {
+router.delete("/:section/:type", isAdminMiddleware, async (req, res) => {
   try {
     await Page.deleteOne({
       section: req.params.section,
@@ -114,7 +152,7 @@ router.delete("/:section/:type", async (req, res) => {
   }
 });
 
-router.put("/:section/:type", async (req, res) => {
+router.put("/:section/:type", isAdminMiddleware, async (req, res) => {
   const { newSection, newType, newTitle } = req.body;
   try {
     await Page.updateOne(

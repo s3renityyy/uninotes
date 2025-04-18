@@ -70,9 +70,9 @@ const MenuComponent: React.FC = () => {
           })),
         },
         {
-          key: "admin-panel",
+          key: "admin",
           label: "Панель админа",
-          onClick: () => navigate("/admin-panel"),
+          onClick: () => navigate("/admin"),
         },
         {
           key: "login",

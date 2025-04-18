@@ -3,6 +3,7 @@ const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
 const User = require("../models/User");
 const cookieParser = require("cookie-parser");
+const authMiddleware = require("../middleware/auth.cjs");
 
 const router = express.Router();
 const JWT_SECRET = process.env.JWT_SECRET || "secret_jwt_key";

@@ -6,7 +6,7 @@ const helmet = require("helmet");
 const cors = require("cors");
 const rateLimit = require("express-rate-limit");
 const apiRoutes = require("./routes/api.cjs");
-const authRoutes = require("./routes/auth");
+const authRoutes = require("./routes/auth.cjs");
 const cookieParser = require("cookie-parser");
 
 const app = express();
