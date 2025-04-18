@@ -2,6 +2,7 @@ import React, { useState, useRef, ChangeEvent } from "react";
 import { useParams } from "react-router-dom";
 import styles from "./ContentEditor.module.scss";
 import Modal from "../Modal/Modal";
+import TextareaAutosize from "react-textarea-autosize";
 
 export interface ContentItem {
   id: string;
@@ -41,11 +42,11 @@ const TextItemEditor: React.FC<{
     <div className={styles["contentCard-text"]}>
       {isEditing ? (
         <>
-          <textarea
+          <TextareaAutosize
             className={styles.editorInline}
             value={editText}
             placeholder="Введите текст"
-            onChange={(e) => setEditText(e.target.value)}
+            onChange={(e: any) => setEditText(e.target.value)}
           />
           <div className={styles["contentCard-text-images"]}>
             <div
@@ -59,13 +60,12 @@ const TextItemEditor: React.FC<{
               />
             </div>
             <div
-              onClick={handleSave}
+              onClick={handleCancel}
               className={styles["contentCard-text-images-trash"]}
             >
               <img
                 src="/cancel.svg"
                 alt="Cancel"
-                onClick={handleCancel}
                 className={styles["contentCard-text-images-edit-svg"]}
               />
             </div>
@@ -207,12 +207,12 @@ const ContentEditor: React.FC<ContentEditorType> = ({
         {isEditable && (
           <>
             <div className={styles["contentEditor-form"]}>
-              <textarea
+              <TextareaAutosize
                 className={`${styles.editorArea} ${
                   isErrorInput && styles.error
                 }`}
                 value={newText}
-                onChange={(e) => {
+                onChange={(e: any) => {
                   setNewText(e.target.value);
                   if (e.target.value.trim()) setIsErrorInput(false);
                 }}
