@@ -48,54 +48,58 @@ const TextItemEditor: React.FC<{
             placeholder="Введите текст"
             onChange={(e: any) => setEditText(e.target.value)}
           />
-          <div className={styles["contentCard-text-images"]}>
-            <div
-              onClick={handleSave}
-              className={styles["contentCard-text-images-trash"]}
-            >
-              <img
-                src="/apply.svg"
-                alt="Save"
-                className={styles["contentCard-text-images-edit-svg"]}
-              />
+          {localStorage.getItem("isAdmin") && (
+            <div className={styles["contentCard-text-images"]}>
+              <div
+                onClick={handleSave}
+                className={styles["contentCard-text-images-trash"]}
+              >
+                <img
+                  src="/apply.svg"
+                  alt="Save"
+                  className={styles["contentCard-text-images-edit-svg"]}
+                />
+              </div>
+              <div
+                onClick={handleCancel}
+                className={styles["contentCard-text-images-trash"]}
+              >
+                <img
+                  src="/cancel.svg"
+                  alt="Cancel"
+                  className={styles["contentCard-text-images-edit-svg"]}
+                />
+              </div>
             </div>
-            <div
-              onClick={handleCancel}
-              className={styles["contentCard-text-images-trash"]}
-            >
-              <img
-                src="/cancel.svg"
-                alt="Cancel"
-                className={styles["contentCard-text-images-edit-svg"]}
-              />
-            </div>
-          </div>
+          )}
         </>
       ) : (
         <>
           <div style={{ whiteSpace: "pre-wrap" }}>{item.src}</div>
-          <div className={styles["contentCard-text-images"]}>
-            <div
-              onClick={() => setIsEditing(true)}
-              className={styles["contentCard-text-images-trash"]}
-            >
-              <img
-                src="/edit.svg"
-                alt="Edit"
-                className={styles["contentCard-text-images-edit-svg"]}
-              />
+          {localStorage.getItem("isAdmin") && (
+            <div className={styles["contentCard-text-images"]}>
+              <div
+                onClick={() => setIsEditing(true)}
+                className={styles["contentCard-text-images-trash"]}
+              >
+                <img
+                  src="/edit.svg"
+                  alt="Edit"
+                  className={styles["contentCard-text-images-edit-svg"]}
+                />
+              </div>
+              <div
+                className={styles["contentCard-text-images-trash"]}
+                onClick={() => onDelete(item.id)}
+              >
+                <img
+                  src="/trash.svg"
+                  alt="Delete"
+                  className={styles["contentCard-text-images-trash-svg"]}
+                />
+              </div>
             </div>
-            <div
-              className={styles["contentCard-text-images-trash"]}
-              onClick={() => onDelete(item.id)}
-            >
-              <img
-                src="/trash.svg"
-                alt="Delete"
-                className={styles["contentCard-text-images-trash-svg"]}
-              />
-            </div>
-          </div>
+          )}
         </>
       )}
     </div>
@@ -268,20 +272,9 @@ const ContentEditor: React.FC<ContentEditorType> = ({
                     onClick={() => setModalImage(item.src!)}
                     alt={item.name}
                   />
-                  {localStorage.getItem("isAdmin") && (
-                    <div className={styles["contentCard-text-images"]}>
-                      <div
-                        onClick={() => downloadFile(item.src, item.name)}
-                        className={styles["contentCard-text-images-trash"]}
-                      >
-                        <img
-                          src="/download.svg"
-                          alt="Download"
-                          className={
-                            styles["contentCard-text-images-trash-svg"]
-                          }
-                        />
-                      </div>
+
+                  <div className={styles["contentCard-text-images"]}>
+                    {localStorage.getItem("isAdmin") && (
                       <div
                         onClick={() => deleteContent(item.id)}
                         className={styles["contentCard-text-images-trash"]}
@@ -294,8 +287,8 @@ const ContentEditor: React.FC<ContentEditorType> = ({
                           }
                         />
                       </div>
-                    </div>
-                  )}
+                    )}
+                  </div>
                 </div>
               )}
               {item.type === "file" && item.src && (

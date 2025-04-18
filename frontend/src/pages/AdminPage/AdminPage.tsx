@@ -1,6 +1,7 @@
 import { useAdmin } from "../../hooks/useAdmin";
+import { useNavigate } from "react-router-dom";
 import Button from "../../components/Button/Button";
-import styles from "./admin-panel.module.scss";
+import styles from "./AdminPage.module.scss";
 import { useEffect, useState } from "react";
 
 interface PageRoute {
@@ -15,16 +16,25 @@ interface EditingRoute {
   title: string;
 }
 
-const AdminPanel = () => {
-  const { isAdmin, login, logout } = useAdmin();
-  const [password, setPassword] = useState("");
+const AdminPage = () => {
+  const { isAdmin } = useAdmin();
   const [section, setSection] = useState("");
   const [type, setType] = useState("");
   const [title, setTitle] = useState("");
   const [routes, setRoutes] = useState<PageRoute[]>([]);
+  const navigate = useNavigate();
   const [editingRoutes, setEditingRoutes] = useState<
     Record<string, EditingRoute>
   >({});
+
+  const handleLogout = async () => {
+    const res = await fetch("/api/admin/logout", {
+      method: "POST",
+    });
+    localStorage.setItem("isAdmin", "false");
+    navigate("/admin/login");
+    return res;
+  };
 
   const loadRoutes = async () => {
     const res = await fetch("/api/links");
@@ -181,43 +191,19 @@ const AdminPanel = () => {
         )}
 
         <div className={styles["admin-form"]}>
-          {isAdmin ? (
-            <div className={styles["admin-form-enabled"]}>
-              Вы администратор!
-              <Button
-                onClick={logout}
-                className={styles["admin-form-disabled-button"]}
-              >
-                Выйти
-              </Button>
-            </div>
-          ) : (
-            <div className={styles["admin-form-disabled"]}>
-              <div className={styles["admin-form-disabled-label"]}>
-                Введите пароль
-              </div>
-              <input
-                placeholder="Пароль"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className={styles["admin-form-disabled-input"]}
-              />
-              <Button
-                onClick={() => {
-                  const success = login(password);
-                  if (!success) alert("Неверный пароль");
-                }}
-                className={styles["admin-form-disabled-button"]}
-              >
-                Войти
-              </Button>
-            </div>
-          )}
+          <div className={styles["admin-form-enabled"]}>
+            Вы администратор!
+            <Button
+              onClick={() => handleLogout()}
+              className={styles["admin-form-disabled-button"]}
+            >
+              Выйти
+            </Button>
+          </div>
         </div>
       </div>
     </>
   );
 };
 
-export default AdminPanel;
+export default AdminPage;
