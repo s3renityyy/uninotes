@@ -10,9 +10,6 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@tiptap/extension-image": "^2.11.7",
-    "@tiptap/react": "^2.11.7",
-    "@tiptap/starter-kit": "^2.11.7",
     "@vitejs/plugin-react": "^4.0.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",

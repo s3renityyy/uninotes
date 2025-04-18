@@ -1,3 +1,12 @@
+.header {
+  height: 75px;
+  border-bottom: 2px solid #131416;
+  background-color: #101114;
+  text-align: center;
+  font-size: 30px;
+  padding-top: 10px;
+}
+
 .route-form {
   display: flex;
   margin-left: auto;
@@ -6,15 +15,13 @@
 
   input {
     height: 50px;
-    border: 1px solid #666;
     border-radius: 10px;
     padding-left: 5px;
   }
 
   button {
     height: 50px;
-    width: 150px;
-    border: 1px solid #666;
+    width: 215px;
     padding: 5px;
   }
 }
@@ -24,7 +31,6 @@
   gap: 15px;
   input {
     height: 50px;
-    border: 1px solid #666;
     border-radius: 10px;
     padding-left: 5px;
   }
@@ -33,35 +39,32 @@
 .admin {
   display: flex;
   flex-direction: column;
-  height: 100%;
+  justify-content: space-between;
+  margin-top: 5vh;
 
   &-routes {
     display: flex;
     flex-direction: column;
     margin-left: auto;
     margin-right: auto;
-    gap: 70px;
-    &-header {
-      font-size: 50px;
-      text-align: center;
-    }
+    gap: 20px;
 
     &-list {
-      display: flex;
-      flex-direction: column;
-      gap: 15px;
-      height: 500px;
-      overflow-y: auto;
-      scrollbar-color: #434343 #121212;
-      padding: 20px;
+      &-item {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+        min-height: 55vh;
+        overflow-y: auto;
+      }
     }
   }
 
   &-form {
     width: 275px;
-    padding-top: 15px;
-    margin-right: auto;
     margin-left: auto;
+    margin-right: auto;
+    margin-top: 5vh;
     &-disabled {
       display: flex;
       flex-direction: column;
@@ -77,9 +80,8 @@
         height: 50px;
         margin-left: auto;
         margin-right: auto;
-        margin-bottom: 5px;
         border-radius: 10px;
-        padding-top: 20px;
+        padding-left: 10px;
         ::placeholder {
         }
       }
@@ -89,14 +91,9 @@
         height: 50px;
         margin-left: auto;
         margin-right: auto;
-        margin-bottom: 25px;
+
         border-radius: 10px;
         padding: 5px;
-        transition: 0.2s;
-
-        &:hover {
-          background: #666;
-        }
       }
     }
 

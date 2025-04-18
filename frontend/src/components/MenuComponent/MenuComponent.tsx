@@ -99,7 +99,7 @@ const MenuComponent: React.FC = () => {
           className={styles.collapseButton}
           onClick={() => setCollapsed(!collapsed)}
         >
-          {collapsed ? "»" : "«"}
+          {collapsed ? "⭢" : "⭠"}
         </Button>
       </aside>
       <main className={styles.mainContent}>

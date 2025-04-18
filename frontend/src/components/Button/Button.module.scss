@@ -1,20 +1,13 @@
 .button {
-  background-color: #121212;
+  border: 1px solid #2a2a2a;
+  background-color: #101114;
   width: 100px;
   height: 50px;
-  border: 1px solid #434343;
-  border-radius: 5px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: 0.2s;
 
-  &:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
-}
-
-.paginationButton {
-  &:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-    background-color: #434343;
+  &:hover {
+    background-color: #2f80ed;
   }
 }

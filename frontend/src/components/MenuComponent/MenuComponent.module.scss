@@ -1,20 +1,21 @@
 .layoutContainer {
   display: flex;
   height: 100vh;
-  background-color: #121212;
+  background-color: #0d0e10;
   color: #fff;
 }
 
 .sidebar {
   white-space: nowrap;
   text-overflow: ellipsis;
-  background-color: #0c0c0c;
+  background-color: #0d0e10;
   width: 250px;
   display: flex;
   justify-content: space-between;
   flex-direction: column;
   transition: width 0.3s;
   position: relative;
+  border-right: 2px solid #131416;
 
   &.collapsed {
     width: 0px;
@@ -75,18 +76,17 @@
 
 .content {
   flex-grow: 1;
-  padding: 16px;
   overflow-y: auto;
 }
 
 .collapseButton {
-  background-color: #0c0c0c;
+  background-color: transparent;
   position: absolute;
   right: -40px;
   top: 50%;
   transform: translateY(-50%);
   width: 40px;
-  height: 80px;
+  height: 75px;
   border: none;
   color: #fff;
   border-radius: 0 4px 4px 0;
