@@ -195,16 +195,6 @@ const ContentEditor: React.FC<ContentEditorType> = ({
     onContentAdded();
   };
 
-  const downloadFile = (url?: string, fileName?: string) => {
-    if (!url || !fileName) return;
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = fileName;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  };
-
   return (
     <>
       <div className={styles.contentEditor}>
