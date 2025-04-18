@@ -2,7 +2,8 @@ import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import ContentEditor, {
   ContentItem,
-} from "../components/ContentEditor/ContentEditor";
+} from "../../components/ContentEditor/ContentEditor";
+import styles from "./content-page.module.scss";
 
 type ContentBlock = {
   _id: string;
@@ -63,7 +64,7 @@ const ContentPage: React.FC = () => {
 
   return (
     <div>
-      <h1>{page.title}</h1>
+      <header className={styles.header}>{page.title}</header>
 
       <ContentEditor
         isEditable={Boolean(localStorage.getItem("isAdmin"))}

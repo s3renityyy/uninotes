@@ -5,7 +5,6 @@ const ADMIN_KEY = import.meta.env.VITE_ADMIN_KEY;
 export const useAdmin = () => {
   const [isAdmin, setIsAdmin] = useState<boolean>(false);
 
-  console.log(ADMIN_KEY);
   useEffect(() => {
     const stored = localStorage.getItem("isAdmin");
     if (stored === "true") setIsAdmin(true);

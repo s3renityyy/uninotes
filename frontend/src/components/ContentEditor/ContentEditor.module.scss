@@ -1,26 +1,70 @@
-.editorArea {
-  border: 1px solid #666;
+.editorInline {
+  min-width: 70%;
+  min-height: 100%;
+  resize: none;
+  border: 1px solid #2a2a2a;
+  padding-left: 10px;
+  padding-top: 10px;
 }
 
 .contentEditor {
   white-space: normal;
-  max-width: 800px;
+  max-width: 80%;
   margin: 0 auto;
   display: flex;
   flex-direction: column;
-  background-color: #1a1a1a;
-  color: #fff;
-  height: 90vh;
+  height: 100%;
   padding: 20px;
   box-sizing: border-box;
 
-  &-loadImage {
-    width: 200px;
-    background-color: inherit;
-    margin-bottom: 5px;
-    margin-left: auto;
-    margin-right: auto;
+  &-form {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    gap: 5px;
+
+    &-img {
+      cursor: pointer;
+      display: flex;
+      background-color: #101114;
+      border-radius: 6px;
+      border: 1px solid #2a2a2a;
+      height: 45px;
+      width: 45px;
+      justify-content: center;
+      align-items: center;
+      transition: 0.2s;
+
+      &:hover {
+        background-color: #666;
+      }
+    }
+
+    &-loadImage {
+      flex: 0 0 auto;
+      width: 20px;
+      height: 20px;
+      cursor: pointer;
+    }
+    &-send {
+      flex: 0 0 auto;
+      width: 23px;
+      height: 23px;
+      cursor: pointer;
+    }
   }
+}
+
+.editorArea {
+  flex: 1;
+  min-width: 0;
+  height: 45px;
+  resize: none;
+  border: 1px solid #2a2a2a;
+  background-color: #101114;
+  border-radius: 6px;
+  padding-left: 10px;
+  padding-top: 10px;
 }
 
 .contentControls {
@@ -30,7 +74,7 @@
   flex-shrink: 0;
 }
 
-.contentFile {
+.file {
   color: #7eaaff;
 }
 
@@ -40,18 +84,13 @@
   margin-bottom: 8px;
   background-color: #121212;
   border: 1px solid #434343;
-  color: #fff;
   border-radius: 4px;
   resize: none;
   min-height: 100px;
+}
 
-  &::placeholder {
-    color: #666;
-  }
-
-  &.error {
-    border-color: red;
-  }
+.error {
+  border-color: #992d22;
 }
 
 .errorText {
@@ -68,10 +107,8 @@
 .contentDisplay {
   margin-top: 15px;
   flex-grow: 1;
-  padding: 16px;
   border-radius: 4px;
   overflow-y: auto;
-  scrollbar-color: #434343 #121212;
   display: flex;
   flex-direction: column;
   gap: 16px;
@@ -79,7 +116,8 @@
 }
 
 .contentCard {
-  border: 1px solid #434343;
+  border: 1px solid #2a2a2a;
+  background-color: #101114;
   border-radius: 4px;
   padding: 16px;
 
@@ -96,33 +134,46 @@
 
     &-images {
       display: flex;
-      flex-direction: column;
-      cursor: pointer;
-      gap: 3px;
+      flex-direction: row;
+      justify-content: end;
+      gap: 10px;
+
+      &-download,
       &-trash,
       &-edit {
-        width: 25px;
-        height: 25px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        transition: 0.2s;
+        height: 30px;
+        width: 30px;
+
+        &:hover {
+          background-color: #666;
+        }
+
+        &-svg {
+          min-width: 20px;
+          min-height: 20px;
+          max-width: 20px;
+          max-height: 20px;
+        }
       }
     }
   }
 }
 
 .contentImage {
-  max-width: 85%;
+  max-width: 50%;
   max-height: 400px;
   display: block;
-  margin-right: auto;
-  margin-left: auto;
   border-radius: 4px;
   object-fit: contain;
-  cursor: pointer;
 }
 
 .download {
   width: 24px;
   height: 24px;
-  cursor: pointer;
 }
 
 .fullImage {
