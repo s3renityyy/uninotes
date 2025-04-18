@@ -5,6 +5,7 @@
   border: 1px solid #2a2a2a;
   padding-left: 10px;
   padding-top: 10px;
+  overflow: hidden;
 }
 
 .contentEditor {
@@ -58,13 +59,15 @@
 .editorArea {
   flex: 1;
   min-width: 0;
-  height: 45px;
+  min-height: 45px;
   resize: none;
   border: 1px solid #2a2a2a;
   background-color: #101114;
   border-radius: 6px;
   padding-left: 10px;
   padding-top: 10px;
+  padding-bottom: 10px;
+  overflow: hidden;
 }
 
 .contentControls {
