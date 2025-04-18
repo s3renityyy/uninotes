@@ -4,21 +4,47 @@ import AppRoutes from "../../routes/routes";
 import styles from "./MenuComponent.module.scss";
 import Button from "../Button/Button";
 import getSections from "../../requests/sections.requests";
+import api from "../../utils/api";
 
 interface MenuItem {
   key: string;
   label: string;
   onClick?: () => void;
   children?: MenuItem[];
+  isAuth?: boolean;
 }
 
 const MenuComponent: React.FC = () => {
   const [collapsed, setCollapsed] = useState<boolean>(false);
   const [openKeys, setOpenKeys] = useState<string[]>(["study"]);
   const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
+  const [isAuth, setIsAuth] = useState<boolean>(
+    localStorage.getItem("user") === "true"
+  );
 
   const navigate = useNavigate();
   const location = useLocation();
+
+  const LogoutButton = () => {
+    const navigate = useNavigate();
+
+    const handleLogout = async () => {
+      await api.post("/logout");
+      localStorage.setItem("user", "false");
+      navigate("/login");
+    };
+
+    if (!isAuth) return null;
+
+    return (
+      <Button
+        onClick={handleLogout}
+        className="bg-red-500 text-white px-4 py-2 rounded"
+      >
+        Выйти
+      </Button>
+    );
+  };
 
   useEffect(() => {
     const loadSections = async () => {
@@ -48,8 +74,20 @@ const MenuComponent: React.FC = () => {
           label: "Панель админа",
           onClick: () => navigate("/admin-panel"),
         },
+        {
+          key: "login",
+          label: "Войти",
+          onClick: () => navigate("/login"),
+          isAuth,
+        },
+        {
+          key: "register",
+          label: "Зарегистрироваться",
+          onClick: () => navigate("/register"),
+          isAuth,
+        },
       ];
-
+      setIsAuth(localStorage.getItem("user") === "true");
       setMenuItems(transformed);
     };
 
@@ -64,28 +102,38 @@ const MenuComponent: React.FC = () => {
 
   const renderMenuItems = (items: MenuItem[]) => (
     <ul className={styles.menuList}>
-      {items.map((item) => (
-        <li key={item.key} className={styles.menuItem}>
-          <div
-            className={`${styles.menuLabel} ${
-              location.pathname === item.key ? styles.active : ""
-            }`}
-            onClick={item.onClick || (() => handleOpenChange(item.key))}
-          >
-            {item.label}
-            {item.children && (
-              <span className={styles.arrow}>
-                {openKeys.includes(item.key) ? "▼" : "▶"}
-              </span>
-            )}
-          </div>
-          {item.children && openKeys.includes(item.key) && (
-            <div className={styles.submenu}>
-              {renderMenuItems(item.children)}
+      {items.map((item) => {
+        if (isAuth && (item.key === "register" || item.key === "login")) {
+          return null;
+        }
+
+        if (!isAuth && item.key === "admin-panel") {
+          return null;
+        }
+
+        return (
+          <li key={item.key} className={styles.menuItem}>
+            <div
+              className={`${styles.menuLabel} ${
+                location.pathname === item.key ? styles.active : ""
+              }`}
+              onClick={item.onClick || (() => handleOpenChange(item.key))}
+            >
+              {item.label}
+              {item.children && (
+                <span className={styles.arrow}>
+                  {openKeys.includes(item.key) ? "▼" : "▶"}
+                </span>
+              )}
             </div>
-          )}
-        </li>
-      ))}
+            {item.children && openKeys.includes(item.key) && (
+              <div className={styles.submenu}>
+                {renderMenuItems(item.children)}
+              </div>
+            )}
+          </li>
+        );
+      })}
     </ul>
   );
 
@@ -101,6 +149,7 @@ const MenuComponent: React.FC = () => {
         >
           {collapsed ? "⭢" : "⭠"}
         </Button>
+        <LogoutButton />
       </aside>
       <main className={styles.mainContent}>
         <div className={styles.content}>
