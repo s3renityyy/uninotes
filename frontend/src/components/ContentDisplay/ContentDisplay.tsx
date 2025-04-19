@@ -32,7 +32,7 @@ const ContentDisplay: React.FC = () => {
           name: block.caption || "",
         }));
 
-        setUpdates(content.reverse()); // по аналогии
+        setUpdates(content.reverse());
       } catch (err: any) {
         setError("Ошибка загрузки");
       } finally {
