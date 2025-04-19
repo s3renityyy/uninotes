@@ -10,6 +10,11 @@ const authRoutes = require("./routes/auth.cjs");
 const cookieParser = require("cookie-parser");
 
 const app = express();
+app.set("trust proxy", 1);
+app.use((req, res, next) => {
+  console.log("Client IP:", req.ip);
+  next();
+});
 const PORT = process.env.PORT || 9000;
 const MONGODB_URI = process.env.MONGODB_URI;
 
