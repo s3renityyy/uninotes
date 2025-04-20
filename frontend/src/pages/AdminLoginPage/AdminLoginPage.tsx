@@ -2,19 +2,27 @@ import { useNavigate } from "react-router-dom";
 import Button from "../../components/Button/Button";
 import styles from "./AdminLoginPage.module.scss";
 import { useState } from "react";
+import { useAdminStore } from "../../store/useAdminStore";
 
 const AdminLoginPage = () => {
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
+  const checkAdmin = useAdminStore((s) => s.checkAdmin);
 
   const handleSignIn = async (password: string) => {
     const res = await fetch("/api/admin/login", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ password }),
+      credentials: "include",
     });
-    localStorage.setItem("isAdmin", "true");
-    navigate("/admin");
+    if (res.ok) {
+      await checkAdmin();
+      navigate("/admin");
+    } else {
+      setPassword("");
+      alert("Неа...");
+    }
     return res;
   };
 

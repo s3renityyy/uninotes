@@ -6,30 +6,28 @@ const helmet = require("helmet");
 const cors = require("cors");
 const rateLimit = require("express-rate-limit");
 const apiRoutes = require("./routes/api.cjs");
-const authRoutes = require("./routes/auth.cjs");
 const cookieParser = require("cookie-parser");
 
 const app = express();
 app.set("trust proxy", 1);
-app.use((req, res, next) => {
-  console.log("Client IP:", req.ip);
-  next();
-});
 const PORT = process.env.PORT || 9000;
 const MONGODB_URI = process.env.MONGODB_URI;
 
 app.use(helmet());
-app.use(cors({ origin: process.env.FRONTEND_URL || true }));
+app.use(
+  cors({
+    origin: process.env.FRONTEND_URL,
+    credentials: true,
+  })
+);
 app.use(express.json());
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 100,
+  max: 500,
   message: { message: "Слишком много запросов, попробуйте позже." },
 });
 app.use(limiter);
 app.use(cookieParser());
-app.use(cors());
-app.use("/api", authRoutes);
 
 mongoose
   .connect(MONGODB_URI)

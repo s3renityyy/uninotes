@@ -21,7 +21,7 @@ router.post("/admin/login", (req, res) => {
     );
     res.cookie("tokenAdmin", tokenAdmin, {
       httpOnly: true,
-      secure: true,
+      secure: process.env.NODE_ENV === "production",
       sameSite: "strict",
     });
     return res.json({ success: true });
@@ -29,7 +29,7 @@ router.post("/admin/login", (req, res) => {
   res.status(401).json({ success: false });
 });
 
-router.post("/admin/logout", isAdminMiddleware, (req, res) => {
+router.post("/admin/logout", (req, res) => {
   res.clearCookie("tokenAdmin").json({ message: "Выход выполнен" });
 });
 
@@ -63,12 +63,10 @@ router.get("/:section/:type", async (req, res) => {
 
 router.post("/:section/:type", isAdminMiddleware, async (req, res) => {
   const { section, type } = req.params;
-  const newBlock = req.body;
   try {
     const updatedPage = await Page.findOneAndUpdate(
       { section, type },
       {
-        $push: { content: newBlock },
         $set: { title: req.body.title || type, updatedAt: new Date() },
       },
       { new: true, upsert: true }

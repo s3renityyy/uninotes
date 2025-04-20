@@ -51,10 +51,7 @@ const ContentDisplay: React.FC = () => {
         {updates.map((item) => (
           <div key={item.id} className={styles.contentCard}>
             {item.type === "text" && item.src && (
-              <TextareaAutosize
-                value={item.src}
-                className={styles.editorInline}
-              />
+              <div style={{ whiteSpace: "pre-wrap" }}>{item.src}</div>
             )}
             {item.type === "image" && item.src && (
               <div className={styles["contentCard-image"]}>

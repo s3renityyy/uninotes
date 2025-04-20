@@ -1,6 +1,7 @@
-import { useEffect, useState, ReactNode } from "react";
+import { useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import api from "../utils/api";
+import { useAdminStore } from "../store/useAdminStore";
+import { ReactNode } from "react";
 
 interface RequireAuthAdminProps {
   children: ReactNode;
@@ -8,23 +9,29 @@ interface RequireAuthAdminProps {
 }
 
 const RequireAuthAdmin = ({ children, path }: RequireAuthAdminProps) => {
-  const [loading, setLoading] = useState(true);
+  const { isAdmin, checkAdmin } = useAdminStore();
   const navigate = useNavigate();
   const { section, type } = useParams();
 
   useEffect(() => {
-    api
-      .get("/admin/me")
-      .then(() => setLoading(false))
-      .catch(() => {
-        const redirectTo =
-          path ||
-          (section && type ? `/${section}/${type}/show` : "/admin/login");
-        navigate(redirectTo);
-      });
-  }, [navigate, path, section, type]);
+    if (isAdmin === null) {
+      checkAdmin();
+    }
+  }, [isAdmin, checkAdmin]);
 
-  if (loading) return <div className="p-4">Загрузка...</div>;
+  useEffect(() => {
+    if (isAdmin === false) {
+      const redirectTo =
+        path || (section && type ? `/${section}/${type}/show` : "/admin/login");
+      navigate(redirectTo);
+    }
+  }, [isAdmin, path, navigate, section, type]);
+
+  if (isAdmin === null) {
+    return <div className="p-4">Загрузка...</div>;
+  }
+
+  if (isAdmin === false) return null;
 
   return <>{children}</>;
 };

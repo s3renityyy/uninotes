@@ -2,12 +2,9 @@ import { useNavigate } from "react-router-dom";
 import Button from "../../components/Button/Button";
 import styles from "./AdminPage.module.scss";
 import { useState, useEffect } from "react";
-
-interface PageRoute {
-  section: string;
-  type: string;
-  title: string;
-}
+import { PageRoute } from "../../App";
+import { useRoutesStore } from "../../store/useRoutesStore";
+import { useAdminStore } from "../../store/useAdminStore";
 
 interface EditingRoute {
   section: string;
@@ -15,35 +12,23 @@ interface EditingRoute {
   title: string;
 }
 
-const AdminPage = () => {
+interface AdminPageProps {}
+
+const AdminPage: React.FC<AdminPageProps> = () => {
   const [section, setSection] = useState("");
   const [type, setType] = useState("");
   const [title, setTitle] = useState("");
-  const [routes, setRoutes] = useState<PageRoute[]>([]);
+  const [newRoutes, setNewRoutes] = useState<PageRoute[]>();
+  const { routes, fetchRoutes } = useRoutesStore();
   const navigate = useNavigate();
   const [editingRoutes, setEditingRoutes] = useState<
     Record<string, EditingRoute>
   >({});
 
   useEffect(() => {
-    loadRoutes();
-  }, []);
-
-  const handleLogout = async () => {
-    const res = await fetch("/api/admin/logout", {
-      method: "POST",
-    });
-    localStorage.setItem("isAdmin", "false");
-    navigate("/admin/login");
-    return res;
-  };
-
-  const loadRoutes = async () => {
-    const res = await fetch("/api/links");
-    const data = await res.json();
     const loadedRoutes: PageRoute[] = [];
 
-    data.forEach((sec: any) => {
+    routes.forEach((sec: any) => {
       sec.children.forEach((child: any) => {
         loadedRoutes.push({
           section: sec.key,
@@ -53,11 +38,20 @@ const AdminPage = () => {
       });
     });
 
-    setRoutes(loadedRoutes);
+    setNewRoutes(loadedRoutes);
+  }, [routes]);
+
+  const handleLogout = async () => {
+    await fetch("/api/admin/logout", { method: "POST" });
+    useAdminStore.setState({ isAdmin: null });
+    navigate("/admin/login");
   };
 
   const addPage = async () => {
-    if (routes.some((r) => r.section === section && r.type === type)) {
+    if (!newRoutes) {
+      return;
+    }
+    if (newRoutes.some((r) => r.section === section && r.type === type)) {
       alert("Такой маршрут уже существует");
       return;
     }
@@ -67,12 +61,13 @@ const AdminPage = () => {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ title, content: [] }),
     });
-    loadRoutes();
+
+    await fetchRoutes();
   };
 
   const deleteRoute = async (section: string, type: string) => {
     await fetch(`/api/${section}/${type}`, { method: "DELETE" });
-    loadRoutes();
+    await fetchRoutes();
   };
 
   const editRoute = async (
@@ -98,8 +93,7 @@ const AdminPage = () => {
       console.error("Ошибка при обновлении роута:", await res.text());
       return;
     }
-
-    await loadRoutes();
+    await fetchRoutes();
   };
 
   return (
@@ -125,60 +119,63 @@ const AdminPage = () => {
             </div>
             <div className={styles["admin-routes-list"]}>
               <div className={styles["admin-routes-list-item"]}>
-                {routes.map((route) => {
-                  const key = `${route.section}-${route.type}`;
-                  const editing = editingRoutes[key] || route;
+                {newRoutes &&
+                  newRoutes.map((route) => {
+                    const key = `${route.section}-${route.type}`;
+                    const editing = editingRoutes[key] || route;
 
-                  const handleChange = (
-                    field: keyof EditingRoute,
-                    value: string
-                  ) => {
-                    setEditingRoutes((prev) => ({
-                      ...prev,
-                      [key]: {
-                        ...editing,
-                        [field]: value,
-                      },
-                    }));
-                  };
+                    const handleChange = (
+                      field: keyof EditingRoute,
+                      value: string
+                    ) => {
+                      setEditingRoutes((prev) => ({
+                        ...prev,
+                        [key]: {
+                          ...editing,
+                          [field]: value,
+                        },
+                      }));
+                    };
 
-                  return (
-                    <div key={key} className={styles.routeItem}>
-                      <input
-                        value={editing.section}
-                        onChange={(e) =>
-                          handleChange("section", e.target.value)
-                        }
-                      />
-                      <input
-                        value={editing.type}
-                        onChange={(e) => handleChange("type", e.target.value)}
-                      />
-                      <input
-                        value={editing.title}
-                        onChange={(e) => handleChange("title", e.target.value)}
-                      />
-                      <Button
-                        onClick={() =>
-                          editRoute(
-                            route.section,
-                            route.type,
-                            editing.section,
-                            editing.type,
-                            editing.title
-                          )
-                        }
-                      >
-                        Изменить
-                      </Button>
-                      <Button
-                        onClick={() => deleteRoute(route.section, route.type)}
-                      >
-                        Удалить
-                      </Button>
-                    </div>
-                  );
-                })}
+                    return (
+                      <div key={key} className={styles.routeItem}>
+                        <input
+                          value={editing.section}
+                          onChange={(e) =>
+                            handleChange("section", e.target.value)
+                          }
+                        />
+                        <input
+                          value={editing.type}
+                          onChange={(e) => handleChange("type", e.target.value)}
+                        />
+                        <input
+                          value={editing.title}
+                          onChange={(e) =>
+                            handleChange("title", e.target.value)
+                          }
+                        />
+                        <Button
+                          onClick={() =>
+                            editRoute(
+                              route.section,
+                              route.type,
+                              editing.section,
+                              editing.type,
+                              editing.title
+                            )
+                          }
+                        >
+                          Изменить
+                        </Button>
+                        <Button
+                          onClick={() => deleteRoute(route.section, route.type)}
+                        >
+                          Удалить
+                        </Button>
+                      </div>
+                    );
+                  })}
               </div>
             </div>
           </div>

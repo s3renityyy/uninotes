@@ -66,12 +66,8 @@ const ContentPage: React.FC = () => {
   return (
     <div>
       <header className={styles.header}>{page.title}</header>
-      <RequireAuthAdmin>
-        <ContentEditor
-          isEditable={Boolean(localStorage.getItem("isAdmin"))}
-          updates={contentItems}
-          onContentAdded={fetchPage}
-        />
+      <RequireAuthAdmin path={`/${section}/${type}/show`}>
+        <ContentEditor updates={contentItems} onContentAdded={fetchPage} />
       </RequireAuthAdmin>
     </div>
   );

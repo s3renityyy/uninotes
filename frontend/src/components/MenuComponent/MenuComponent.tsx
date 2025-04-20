@@ -3,53 +3,28 @@ import { useLocation, useNavigate } from "react-router-dom";
 import AppRoutes from "../../routes/routes";
 import styles from "./MenuComponent.module.scss";
 import Button from "../Button/Button";
-import getSections from "../../requests/sections.requests";
-import api from "../../utils/api";
+import { useRoutesStore } from "../../store/useRoutesStore";
 
 interface MenuItem {
   key: string;
   label: string;
   onClick?: () => void;
   children?: MenuItem[];
-  isAuth?: boolean;
 }
 
-const MenuComponent: React.FC = () => {
+interface MenuComponentProps {}
+
+const MenuComponent: React.FC<MenuComponentProps> = () => {
   const [collapsed, setCollapsed] = useState<boolean>(false);
   const [openKeys, setOpenKeys] = useState<string[]>(["study"]);
   const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
-  const [isAuth, setIsAuth] = useState<boolean>(
-    localStorage.getItem("user") === "true"
-  );
+  const routes = useRoutesStore((s) => s.routes);
 
   const navigate = useNavigate();
   const location = useLocation();
 
-  const LogoutButton = () => {
-    const navigate = useNavigate();
-
-    const handleLogout = async () => {
-      await api.post("/logout");
-      localStorage.setItem("user", "false");
-      navigate("/login");
-    };
-
-    if (!isAuth) return null;
-
-    return (
-      <Button
-        onClick={handleLogout}
-        className="bg-red-500 text-white px-4 py-2 rounded"
-      >
-        Выйти
-      </Button>
-    );
-  };
-
   useEffect(() => {
     const loadSections = async () => {
-      const sections = await getSections();
-
       const transformed: MenuItem[] = [
         {
           key: "/",
@@ -59,7 +34,7 @@ const MenuComponent: React.FC = () => {
         {
           key: "study",
           label: "Обучение",
-          children: sections.map((section: any) => ({
+          children: routes.map((section: any) => ({
             key: section.key,
             label: section.label,
             children: section.children.map((child: any) => ({
@@ -74,25 +49,12 @@ const MenuComponent: React.FC = () => {
           label: "Панель админа",
           onClick: () => navigate("/admin"),
         },
-        {
-          key: "login",
-          label: "Войти",
-          onClick: () => navigate("/login"),
-          isAuth,
-        },
-        {
-          key: "register",
-          label: "Зарегистрироваться",
-          onClick: () => navigate("/register"),
-          isAuth,
-        },
       ];
-      setIsAuth(localStorage.getItem("user") === "true");
       setMenuItems(transformed);
     };
 
     loadSections();
-  }, [navigate]);
+  }, [navigate, routes]);
 
   const handleOpenChange = (key: string) => {
     setOpenKeys((prev) =>
@@ -103,14 +65,6 @@ const MenuComponent: React.FC = () => {
   const renderMenuItems = (items: MenuItem[]) => (
     <ul className={styles.menuList}>
       {items.map((item) => {
-        if (isAuth && (item.key === "register" || item.key === "login")) {
-          return null;
-        }
-
-        if (!isAuth && item.key === "admin-panel") {
-          return null;
-        }
-
         return (
           <li key={item.key} className={styles.menuItem}>
             <div
@@ -149,7 +103,6 @@ const MenuComponent: React.FC = () => {
         >
           {collapsed ? "⭢" : "⭠"}
         </Button>
-        <LogoutButton />
       </aside>
       <main className={styles.mainContent}>
         <div className={styles.content}>

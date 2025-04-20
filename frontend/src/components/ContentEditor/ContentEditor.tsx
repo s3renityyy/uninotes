@@ -3,6 +3,12 @@ import { useParams } from "react-router-dom";
 import styles from "./ContentEditor.module.scss";
 import Modal from "../Modal/Modal";
 import TextareaAutosize from "react-textarea-autosize";
+import TrashIcon from "../../assets/icons/trash.svg?react";
+import ApplyIcon from "../../assets/icons/apply.svg?react";
+import CancelIcon from "../../assets/icons/cancel.svg?react";
+import EditIcon from "../../assets/icons/edit.svg?react";
+import AttachIcon from "../../assets/icons/attach.svg?react";
+import SendIcon from "../../assets/icons/send.svg?react";
 
 export interface ContentItem {
   id: string;
@@ -13,7 +19,6 @@ export interface ContentItem {
 }
 
 type ContentEditorType = {
-  isEditable: boolean;
   updates: ContentItem[];
   onContentAdded: () => void;
 };
@@ -48,58 +53,48 @@ const TextItemEditor: React.FC<{
             placeholder="Введите текст"
             onChange={(e: any) => setEditText(e.target.value)}
           />
-          {localStorage.getItem("isAdmin") && (
-            <div className={styles["contentCard-text-images"]}>
-              <div
-                onClick={handleSave}
-                className={styles["contentCard-text-images-trash"]}
-              >
-                <img
-                  src="/apply.svg"
-                  alt="Save"
-                  className={styles["contentCard-text-images-edit-svg"]}
-                />
-              </div>
-              <div
-                onClick={handleCancel}
-                className={styles["contentCard-text-images-trash"]}
-              >
-                <img
-                  src="/cancel.svg"
-                  alt="Cancel"
-                  className={styles["contentCard-text-images-edit-svg"]}
-                />
-              </div>
+
+          <div className={styles["contentCard-text-images"]}>
+            <div
+              onClick={handleSave}
+              className={styles["contentCard-text-images-trash"]}
+            >
+              <ApplyIcon
+                className={styles["contentCard-text-images-edit-svg"]}
+              />
             </div>
-          )}
+            <div
+              onClick={handleCancel}
+              className={styles["contentCard-text-images-trash"]}
+            >
+              <CancelIcon
+                className={styles["contentCard-text-images-edit-svg"]}
+              />
+            </div>
+          </div>
         </>
       ) : (
         <>
           <div style={{ whiteSpace: "pre-wrap" }}>{item.src}</div>
-          {localStorage.getItem("isAdmin") && (
-            <div className={styles["contentCard-text-images"]}>
-              <div
-                onClick={() => setIsEditing(true)}
-                className={styles["contentCard-text-images-trash"]}
-              >
-                <img
-                  src="/edit.svg"
-                  alt="Edit"
-                  className={styles["contentCard-text-images-edit-svg"]}
-                />
-              </div>
-              <div
-                className={styles["contentCard-text-images-trash"]}
-                onClick={() => onDelete(item.id)}
-              >
-                <img
-                  src="/trash.svg"
-                  alt="Delete"
-                  className={styles["contentCard-text-images-trash-svg"]}
-                />
-              </div>
+
+          <div className={styles["contentCard-text-images"]}>
+            <div
+              onClick={() => setIsEditing(true)}
+              className={styles["contentCard-text-images-trash"]}
+            >
+              <EditIcon
+                className={styles["contentCard-text-images-edit-svg"]}
+              />
             </div>
-          )}
+            <div
+              className={styles["contentCard-text-images-trash"]}
+              onClick={() => onDelete(item.id)}
+            >
+              <TrashIcon
+                className={styles["contentCard-text-images-trash-svg"]}
+              />
+            </div>
+          </div>
         </>
       )}
     </div>
@@ -107,7 +102,6 @@ const TextItemEditor: React.FC<{
 };
 
 const ContentEditor: React.FC<ContentEditorType> = ({
-  isEditable,
   updates,
   onContentAdded,
 }) => {
@@ -198,51 +192,39 @@ const ContentEditor: React.FC<ContentEditorType> = ({
   return (
     <>
       <div className={styles.contentEditor}>
-        {isEditable && (
-          <>
-            <div className={styles["contentEditor-form"]}>
-              <TextareaAutosize
-                className={`${styles.editorArea} ${
-                  isErrorInput && styles.error
-                }`}
-                value={newText}
-                onChange={(e: any) => {
-                  setNewText(e.target.value);
-                  if (e.target.value.trim()) setIsErrorInput(false);
-                }}
-                onKeyDown={handleKeyDown}
-                placeholder="Введите текст..."
-              />
-              <div
-                className={styles["contentEditor-form-img"]}
-                onClick={handleUploadClick}
-              >
-                <img
-                  className={styles["contentEditor-form-loadImage"]}
-                  src="/attach.svg"
-                  alt="Attach"
-                />
-              </div>
-              <div
-                className={styles["contentEditor-form-img"]}
-                onClick={handleSubmit}
-              >
-                <img
-                  className={styles["contentEditor-form-send"]}
-                  src="/send.svg"
-                  alt="Send"
-                />
-              </div>
-            </div>
-            <input
-              type="file"
-              accept="image/*,.pdf,.doc,.docx"
-              style={{ display: "none" }}
-              ref={fileInputRef}
-              onChange={handleFileChange}
+        <>
+          <div className={styles["contentEditor-form"]}>
+            <TextareaAutosize
+              className={`${styles.editorArea} ${isErrorInput && styles.error}`}
+              value={newText}
+              onChange={(e: any) => {
+                setNewText(e.target.value);
+                if (e.target.value.trim()) setIsErrorInput(false);
+              }}
+              onKeyDown={handleKeyDown}
+              placeholder="Введите текст..."
             />
-          </>
-        )}
+            <div
+              className={styles["contentEditor-form-img"]}
+              onClick={handleUploadClick}
+            >
+              <AttachIcon className={styles["contentEditor-form-loadImage"]} />
+            </div>
+            <div
+              className={styles["contentEditor-form-img"]}
+              onClick={handleSubmit}
+            >
+              <SendIcon className={styles["contentEditor-form-send"]} />
+            </div>
+          </div>
+          <input
+            type="file"
+            accept="image/*,.pdf,.doc,.docx"
+            style={{ display: "none" }}
+            ref={fileInputRef}
+            onChange={handleFileChange}
+          />
+        </>
 
         <div className={styles.contentDisplay}>
           {updates.map((item) => (
@@ -264,20 +246,14 @@ const ContentEditor: React.FC<ContentEditorType> = ({
                   />
 
                   <div className={styles["contentCard-text-images"]}>
-                    {localStorage.getItem("isAdmin") && (
-                      <div
-                        onClick={() => deleteContent(item.id)}
-                        className={styles["contentCard-text-images-trash"]}
-                      >
-                        <img
-                          src="/trash.svg"
-                          alt="Delete"
-                          className={
-                            styles["contentCard-text-images-trash-svg"]
-                          }
-                        />
-                      </div>
-                    )}
+                    <div
+                      onClick={() => deleteContent(item.id)}
+                      className={styles["contentCard-text-images-trash"]}
+                    >
+                      <TrashIcon
+                        className={styles["contentCard-text-images-trash-svg"]}
+                      />
+                    </div>
                   </div>
                 </div>
               )}
@@ -290,18 +266,14 @@ const ContentEditor: React.FC<ContentEditorType> = ({
                   >
                     {item.name}
                   </a>
-                  {localStorage.getItem("isAdmin") && (
-                    <div
-                      onClick={() => deleteContent(item.id)}
-                      className={styles["contentCard-text-images-trash"]}
-                    >
-                      <img
-                        src="/trash.svg"
-                        alt="Delete"
-                        className={styles["contentCard-text-images-trash-svg"]}
-                      />
-                    </div>
-                  )}
+                  <div
+                    onClick={() => deleteContent(item.id)}
+                    className={styles["contentCard-text-images-trash"]}
+                  >
+                    <TrashIcon
+                      className={styles["contentCard-text-images-trash-svg"]}
+                    />
+                  </div>
                 </div>
               )}
             </div>
