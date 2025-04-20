@@ -37,6 +37,7 @@ const ContentPage: React.FC = () => {
         throw new Error("Не удалось загрузить страницу");
       }
       const data = await response.json();
+      console.log(data);
       setPage(data);
     } catch (err: any) {
       setError(err.message);
@@ -53,7 +54,7 @@ const ContentPage: React.FC = () => {
   if (error) return <div>Ошибка: {error}</div>;
   if (!page) return <div>Страница не найдена</div>;
 
-  const contentItems: ContentItem[] = page.content.reverse().map((block) => ({
+  const contentItems: ContentItem[] = page.content.map((block) => ({
     id: block._id,
     type: block.type as "text" | "image" | "file",
     src: block.data || block.url || "",

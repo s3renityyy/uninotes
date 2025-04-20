@@ -51,10 +51,12 @@ router.get("/:section/:type", async (req, res) => {
     if (!page) return res.status(404).json({ error: "Page not found" });
     res.json({
       ...page.toObject(),
-      content: page.content.map((item) => ({
-        ...item.toObject(),
-        id: item._id,
-      })),
+      content: [...page.content]
+        .sort((a, b) => new Date(b.dateAdded) - new Date(a.dateAdded))
+        .map((item) => ({
+          ...item.toObject(),
+          id: item._id,
+        })),
     });
   } catch (err) {
     res.status(500).json({ error: "Internal Server Error" });
