@@ -25,6 +25,8 @@ const AdminPage: React.FC<AdminPageProps> = () => {
     Record<string, EditingRoute>
   >({});
 
+  const isValidRouteKey = (key: string) => /^[a-zA-Z0-9_-]+$/.test(key);
+
   useEffect(() => {
     const loadedRoutes: PageRoute[] = [];
 
@@ -48,10 +50,11 @@ const AdminPage: React.FC<AdminPageProps> = () => {
   };
 
   const addPage = async () => {
-    if (!newRoutes) {
+    if (!isValidRouteKey(section) || !isValidRouteKey(type)) {
+      alert("Section и Type может содержать латиницу, цифры и символы -_");
       return;
     }
-    if (newRoutes.some((r) => r.section === section && r.type === type)) {
+    if (newRoutes!.some((r) => r.section === section && r.type === type)) {
       alert("Такой маршрут уже существует");
       return;
     }
@@ -62,7 +65,11 @@ const AdminPage: React.FC<AdminPageProps> = () => {
       body: JSON.stringify({ title, content: [] }),
     });
 
-    await fetchRoutes();
+    await fetchRoutes().then(() => {
+      setSection("");
+      setType("");
+      setTitle("");
+    });
   };
 
   const deleteRoute = async (section: string, type: string) => {
@@ -77,8 +84,14 @@ const AdminPage: React.FC<AdminPageProps> = () => {
     newType: string,
     newTitle: string
   ) => {
-    if (!newSection || !newType || !newTitle) return;
-
+    if (
+      !isValidRouteKey(newSection) ||
+      !isValidRouteKey(newType) ||
+      !newTitle.trim()
+    ) {
+      alert("Section и Type может содержать латиницу, цифры и символы -_");
+      return;
+    }
     const res = await fetch(`/api/${oldSection}/${oldType}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
@@ -93,6 +106,7 @@ const AdminPage: React.FC<AdminPageProps> = () => {
       console.error("Ошибка при обновлении роута:", await res.text());
       return;
     }
+
     await fetchRoutes();
   };
 
@@ -105,17 +119,22 @@ const AdminPage: React.FC<AdminPageProps> = () => {
             <div className={styles["route-form"]}>
               <input
                 placeholder="Section"
+                value={section}
                 onChange={(e) => setSection(e.target.value)}
               />
               <input
                 placeholder="Type"
+                value={type}
                 onChange={(e) => setType(e.target.value)}
               />
               <input
                 placeholder="Title"
+                value={title}
                 onChange={(e) => setTitle(e.target.value)}
               />
-              <Button onClick={addPage}>Создать роут</Button>
+              <Button type="button" onClick={addPage}>
+                Создать роут
+              </Button>
             </div>
             <div className={styles["admin-routes-list"]}>
               <div className={styles["admin-routes-list-item"]}>

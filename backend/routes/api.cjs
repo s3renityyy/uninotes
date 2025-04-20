@@ -5,6 +5,8 @@ const { ObjectId } = require("mongoose").Types;
 const isAdminMiddleware = require("../middleware/adminAuth.cjs");
 const jwt = require("jsonwebtoken");
 
+const isValidRouteKey = (str) => /^[a-zA-Z0-9_-]+$/.test(str);
+
 router.get("/admin/me", isAdminMiddleware, (req, res) => {
   res.json({ ok: true });
 });
@@ -65,6 +67,9 @@ router.get("/:section/:type", async (req, res) => {
 
 router.post("/:section/:type", isAdminMiddleware, async (req, res) => {
   const { section, type } = req.params;
+  if (!isValidRouteKey(section) || !isValidRouteKey(type)) {
+    return res.status(400).json({ error: "Некорректный section или type" });
+  }
 
   const { type: blockType, data, url, caption } = req.body;
   const newBlock =
@@ -137,6 +142,9 @@ router.put(
   isAdminMiddleware,
   async (req, res) => {
     const { section, type, contentId } = req.params;
+    if (!isValidRouteKey(section) || !isValidRouteKey(type)) {
+      return res.status(400).json({ error: "Некорректный section или type" });
+    }
     const { data, caption } = req.body;
     try {
       await Page.updateOne(
