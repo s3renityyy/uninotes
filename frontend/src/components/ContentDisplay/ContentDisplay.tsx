@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import styles from "./ContentDisplay.module.scss";
 import Modal from "../Modal/Modal";
-import TextareaAutosize from "react-textarea-autosize";
 import { useParams } from "react-router-dom";
 
 export interface ContentItem {
