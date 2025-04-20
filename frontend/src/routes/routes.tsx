@@ -1,5 +1,5 @@
 import { Route, Routes } from "react-router";
-import MainPage from "../pages/main-page";
+import MainPage from "../pages/MainPage.tsx/MainPage.tsx";
 import NoMatchPage from "../pages/no-match-page";
 import ContentPage from "../pages/content-page/content-page.tsx";
 import AdminLoginPage from "../pages/AdminLoginPage/AdminLoginPage.tsx";

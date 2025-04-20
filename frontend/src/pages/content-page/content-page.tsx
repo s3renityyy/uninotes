@@ -53,15 +53,12 @@ const ContentPage: React.FC = () => {
   if (error) return <div>Ошибка: {error}</div>;
   if (!page) return <div>Страница не найдена</div>;
 
-  const contentItems: ContentItem[] = page.content
-    .slice(1)
-    .reverse()
-    .map((block) => ({
-      id: block._id,
-      type: block.type as "text" | "image" | "file",
-      src: block.data || block.url || "",
-      name: block.caption || "",
-    }));
+  const contentItems: ContentItem[] = page.content.reverse().map((block) => ({
+    id: block._id,
+    type: block.type as "text" | "image" | "file",
+    src: block.data || block.url || "",
+    name: block.caption || "",
+  }));
 
   return (
     <div>

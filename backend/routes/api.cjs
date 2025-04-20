@@ -63,19 +63,29 @@ router.get("/:section/:type", async (req, res) => {
 
 router.post("/:section/:type", isAdminMiddleware, async (req, res) => {
   const { section, type } = req.params;
+
+  const { type: blockType, data, url, caption } = req.body;
+  const newBlock =
+    blockType && (data || url)
+      ? { type: blockType, data, url, caption, dateAdded: new Date() }
+      : null;
+
+  const update = {
+    $set: { title: req.body.title || type, updatedAt: new Date() },
+  };
+
+  if (newBlock) {
+    update.$push = { content: newBlock };
+  }
+
   try {
-    const updatedPage = await Page.findOneAndUpdate(
-      { section, type },
-      {
-        $set: { title: req.body.title || type, updatedAt: new Date() },
-      },
-      { new: true, upsert: true }
-    );
-    res.status(201).json({
-      message: "Content added",
-      page: updatedPage,
+    const page = await Page.findOneAndUpdate({ section, type }, update, {
+      new: true,
+      upsert: true,
     });
+    res.status(201).json({ message: "Content added", page });
   } catch (err) {
+    console.error(err);
     res.status(500).json({ error: "Internal Server Error" });
   }
 });

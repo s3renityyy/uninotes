@@ -7,7 +7,7 @@ const pageSchema = new Schema({
   title: String,
   content: [
     {
-      type: { type: String },
+      type: { type: String, required: true },
       data: String,
       url: String,
       caption: String,

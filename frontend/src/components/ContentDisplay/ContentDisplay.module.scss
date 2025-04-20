@@ -1,230 +1,66 @@
-.editorInline {
-  min-width: 100%;
-  min-height: 100%;
-  resize: none;
-  border: 1px solid #2a2a2a;
-  padding-left: 10px;
-  padding-top: 10px;
-  overflow: hidden;
-}
-
-.contentEditor {
-  white-space: normal;
-  max-width: 80%;
-  margin: 0 auto;
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  padding: 20px;
-  box-sizing: border-box;
-
-  &-form {
-    display: flex;
-    align-items: center;
-    width: 100%;
-    gap: 5px;
-
-    &-img {
-      cursor: pointer;
-      display: flex;
-      background-color: #101114;
-      border-radius: 6px;
-      border: 1px solid #2a2a2a;
-      height: 45px;
-      width: 45px;
-      justify-content: center;
-      align-items: center;
-      transition: 0.2s;
-
-      &:hover {
-        background-color: #666;
-      }
-    }
-
-    &-loadImage {
-      flex: 0 0 auto;
-      width: 20px;
-      height: 20px;
-      cursor: pointer;
-    }
-    &-send {
-      flex: 0 0 auto;
-      width: 23px;
-      height: 23px;
-      cursor: pointer;
-    }
-  }
-}
-
-.editorArea {
-  flex: 1;
-  min-width: 0;
-  min-height: 45px;
-  resize: none;
-  border: 1px solid #2a2a2a;
-  background-color: #101114;
-  border-radius: 6px;
-  padding-left: 10px;
-  padding-top: 10px;
-  padding-bottom: 10px;
-  overflow: hidden;
-}
-
-.contentControls {
-  margin-bottom: 24px;
-  padding: 16px;
-  border-radius: 4px;
-  flex-shrink: 0;
-}
-
-.file {
-  color: #7eaaff;
-}
-
-.textArea {
-  width: 100%;
-  padding: 8px;
-  margin-bottom: 8px;
-  background-color: #121212;
-  border: 1px solid #434343;
-  border-radius: 4px;
-  resize: none;
-  min-height: 100px;
-}
-
-.error {
-  border-color: #992d22;
-}
-
-.errorText {
-  color: #ff4d4d;
-  font-size: 0.875rem;
-  margin-bottom: 12px;
-}
-
-.buttonGroup {
-  display: flex;
-  gap: 12px;
-}
-
-.contentDisplay {
+.content-display {
   margin-top: 15px;
-  flex-grow: 1;
-  border-radius: 4px;
-  overflow-y: auto;
   display: flex;
   flex-direction: column;
   gap: 16px;
+  overflow-y: auto;
   position: relative;
+  align-items: center;
+  margin-bottom: 15px;
 }
 
-.contentCard {
-  border: 1px solid #2a2a2a;
+.content-display__loading,
+.content-display__error {
+  padding: 20px;
+  text-align: center;
+}
+
+.content-display__card {
   background-color: #101114;
+  border: 1px solid #2a2a2a;
   border-radius: 4px;
   padding: 16px;
-  min-width: 100%;
-
-  &-image {
-    display: flex;
-    flex-direction: row;
-    justify-content: space-between;
-  }
-
-  &-text {
-    display: flex;
-    flex-direction: row;
-    justify-content: space-between;
-
-    &-images {
-      display: flex;
-      flex-direction: row;
-      justify-content: end;
-      gap: 10px;
-
-      &-download,
-      &-trash,
-      &-edit {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        transition: 0.2s;
-        height: 30px;
-        width: 30px;
-
-        &:hover {
-          background-color: #666;
-        }
-
-        &-svg {
-          min-width: 20px;
-          min-height: 20px;
-          max-width: 20px;
-          max-height: 20px;
-        }
-      }
-    }
-  }
+  width: 70%;
+  box-sizing: border-box;
 }
 
-.contentImage {
+.content-display__text {
+  white-space: pre-wrap;
+}
+
+.content-display__media {
+  display: flex;
+  justify-content: center;
+  margin-top: 12px;
+}
+
+.content-display__image {
   max-width: 50%;
   max-height: 400px;
-  display: block;
   border-radius: 4px;
   object-fit: contain;
+  cursor: pointer;
 }
 
-.download {
-  width: 24px;
-  height: 24px;
+.content-display__file {
+  color: #7eaaff;
+  text-decoration: none;
+  background-color: #101114;
+  padding: 8px;
+  border-radius: 4px;
+  display: inline-block;
 }
 
-.fullImage {
+.content-display__modal-image {
   max-width: 100%;
   max-height: 700px;
 }
 
-.fileContainer {
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between;
-  margin-top: 12px;
-  padding: 8px;
-  border-radius: 4px;
-}
-
-.timestamp {
-  margin-top: 8px;
-  font-size: 0.8em;
-  color: #888;
-  text-align: right;
-}
-
-.pagination {
-  display: flex;
-  justify-content: center;
-  flex-wrap: wrap;
-  gap: 8px;
-  padding: 12px;
-  margin-top: 12px;
-}
-
-.pageLink {
-  padding: 6px 10px;
-  border: 1px solid #444;
-  background-color: transparent;
-  color: #fff;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-
-  &:hover {
-    background-color: #333;
-  }
-
-  &.active {
-    background-color: #555;
-    font-weight: bold;
-  }
+.header {
+  height: 75px;
+  border-bottom: 2px solid #131416;
+  background-color: #101114;
+  text-align: center;
+  font-size: 30px;
+  padding-top: 10px;
 }

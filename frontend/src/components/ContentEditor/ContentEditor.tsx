@@ -44,56 +44,50 @@ const TextItemEditor: React.FC<{
   };
 
   return (
-    <div className={styles["contentCard-text"]}>
+    <div className={styles["content-editor__item"]}>
       {isEditing ? (
         <>
           <TextareaAutosize
-            className={styles.editorInline}
+            className={styles["content-editor__textarea"]}
             value={editText}
             placeholder="Введите текст"
-            onChange={(e: any) => setEditText(e.target.value)}
+            onChange={(e) => setEditText(e.target.value)}
           />
-
-          <div className={styles["contentCard-text-images"]}>
-            <div
+          <div className={styles["content-editor__controls"]}>
+            <button
+              type="button"
               onClick={handleSave}
-              className={styles["contentCard-text-images-trash"]}
+              className={styles["content-editor__btn"]}
             >
-              <ApplyIcon
-                className={styles["contentCard-text-images-edit-svg"]}
-              />
-            </div>
-            <div
+              <ApplyIcon className={styles["content-editor__icon"]} />
+            </button>
+            <button
+              type="button"
               onClick={handleCancel}
-              className={styles["contentCard-text-images-trash"]}
+              className={styles["content-editor__btn"]}
             >
-              <CancelIcon
-                className={styles["contentCard-text-images-edit-svg"]}
-              />
-            </div>
+              <CancelIcon className={styles["content-editor__icon"]} />
+            </button>
           </div>
         </>
       ) : (
         <>
           <div style={{ whiteSpace: "pre-wrap" }}>{item.src}</div>
-
-          <div className={styles["contentCard-text-images"]}>
-            <div
+          <div className={styles["content-editor__controls"]}>
+            <button
+              type="button"
               onClick={() => setIsEditing(true)}
-              className={styles["contentCard-text-images-trash"]}
+              className={styles["content-editor__btn"]}
             >
-              <EditIcon
-                className={styles["contentCard-text-images-edit-svg"]}
-              />
-            </div>
-            <div
-              className={styles["contentCard-text-images-trash"]}
+              <EditIcon className={styles["content-editor__icon"]} />
+            </button>
+            <button
+              type="button"
               onClick={() => onDelete(item.id)}
+              className={styles["content-editor__btn"]}
             >
-              <TrashIcon
-                className={styles["contentCard-text-images-trash-svg"]}
-              />
-            </div>
+              <TrashIcon className={styles["content-editor__icon"]} />
+            </button>
           </div>
         </>
       )}
@@ -109,188 +103,168 @@ const ContentEditor: React.FC<ContentEditorType> = ({
   const [newText, setNewText] = useState("");
   const [modalImage, setModalImage] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
-  const [isErrorInput, setIsErrorInput] = useState<boolean>(false);
+  const [isErrorInput, setIsErrorInput] = useState(false);
 
   const handleSubmit = async () => {
     const trimmed = newText.trim();
     if (!trimmed) {
       setIsErrorInput(true);
       return;
-    } else {
-      setIsErrorInput(false);
     }
+    setIsErrorInput(false);
 
-    try {
-      if (!section || !type) throw new Error("Section или type не определены.");
-
-      const response = await fetch(`/api/${section}/${type}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ type: "text", data: trimmed }),
-      });
-      if (!response.ok) throw new Error("Не удалось добавить контент");
-
-      setNewText("");
-      onContentAdded();
-    } catch (err: any) {
-      console.error("Ошибка при отправке контента:", err);
-    }
-  };
-
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      handleSubmit();
-    }
-  };
-
-  const handleUploadClick = () => {
-    fileInputRef.current?.click();
+    if (!section || !type) return;
+    await fetch(`/api/${section}/${type}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ type: "text", data: trimmed }),
+    });
+    setNewText("");
+    onContentAdded();
   };
 
   const handleFileChange = async (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (!file) return;
-
+    if (!file || !section || !type) return;
     const reader = new FileReader();
     reader.onload = async () => {
-      const fileSrc = reader.result;
-      if (!section || !type) return;
-
       await fetch(`/api/${section}/${type}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           type: file.type.startsWith("image/") ? "image" : "file",
-          url: fileSrc,
+          url: reader.result,
           caption: file.name,
         }),
       });
-
       onContentAdded();
       e.target.value = "";
     };
     reader.readAsDataURL(file);
   };
 
-  const deleteContent = async (contentId: string) => {
+  const deleteContent = async (id: string) => {
     if (!section || !type) return;
-    await fetch(`/api/${section}/${type}/${contentId}`, { method: "DELETE" });
+    await fetch(`/api/${section}/${type}/${id}`, { method: "DELETE" });
     onContentAdded();
   };
 
-  const editContent = async (contentId: string, newData: string) => {
+  const editContent = async (id: string, data: string) => {
     if (!section || !type) return;
-    await fetch(`/api/${section}/${type}/${contentId}`, {
+    await fetch(`/api/${section}/${type}/${id}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ data: newData, caption: "" }),
+      body: JSON.stringify({ data, caption: "" }),
     });
     onContentAdded();
   };
 
   return (
-    <>
-      <div className={styles.contentEditor}>
-        <>
-          <div className={styles["contentEditor-form"]}>
-            <TextareaAutosize
-              className={`${styles.editorArea} ${isErrorInput && styles.error}`}
-              value={newText}
-              onChange={(e: any) => {
-                setNewText(e.target.value);
-                if (e.target.value.trim()) setIsErrorInput(false);
-              }}
-              onKeyDown={handleKeyDown}
-              placeholder="Введите текст..."
-            />
-            <div
-              className={styles["contentEditor-form-img"]}
-              onClick={handleUploadClick}
-            >
-              <AttachIcon className={styles["contentEditor-form-loadImage"]} />
-            </div>
-            <div
-              className={styles["contentEditor-form-img"]}
-              onClick={handleSubmit}
-            >
-              <SendIcon className={styles["contentEditor-form-send"]} />
-            </div>
-          </div>
-          <input
-            type="file"
-            accept="image/*,.pdf,.doc,.docx"
-            style={{ display: "none" }}
-            ref={fileInputRef}
-            onChange={handleFileChange}
-          />
-        </>
-
-        <div className={styles.contentDisplay}>
-          {updates.map((item) => (
-            <div key={item.id} className={styles.contentCard}>
-              {item.type === "text" && item.src && (
-                <TextItemEditor
-                  item={item}
-                  onSave={editContent}
-                  onDelete={deleteContent}
-                />
-              )}
-              {item.type === "image" && item.src && (
-                <div className={styles["contentCard-image"]}>
-                  <img
-                    src={item.src}
-                    className={styles.contentImage}
-                    onClick={() => setModalImage(item.src!)}
-                    alt={item.name}
-                  />
-
-                  <div className={styles["contentCard-text-images"]}>
-                    <div
-                      onClick={() => deleteContent(item.id)}
-                      className={styles["contentCard-text-images-trash"]}
-                    >
-                      <TrashIcon
-                        className={styles["contentCard-text-images-trash-svg"]}
-                      />
-                    </div>
-                  </div>
-                </div>
-              )}
-              {item.type === "file" && item.src && (
-                <div className={styles["contentCard-image"]}>
-                  <a
-                    className={styles.file}
-                    href={item.src}
-                    download={item.name}
-                  >
-                    {item.name}
-                  </a>
-                  <div
-                    onClick={() => deleteContent(item.id)}
-                    className={styles["contentCard-text-images-trash"]}
-                  >
-                    <TrashIcon
-                      className={styles["contentCard-text-images-trash-svg"]}
-                    />
-                  </div>
-                </div>
-              )}
-            </div>
-          ))}
-        </div>
-
-        {modalImage && (
-          <Modal isOpen={true} closeModal={() => setModalImage(null)}>
-            <img
-              src={modalImage}
-              className={styles.fullImage}
-              alt="Modal view"
-            />
-          </Modal>
-        )}
+    <div className={styles["content-editor"]}>
+      <div className={styles["content-editor__form"]}>
+        <TextareaAutosize
+          className={`${styles["content-editor__textarea"]} ${
+            isErrorInput ? styles["content-editor__textarea--error"] : ""
+          }`}
+          value={newText}
+          placeholder="Введите текст..."
+          onChange={(e) => {
+            setNewText(e.target.value);
+            if (e.target.value.trim()) setIsErrorInput(false);
+          }}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" && !e.shiftKey) {
+              e.preventDefault();
+              handleSubmit();
+            }
+          }}
+        />
+        <button
+          type="button"
+          className={styles["content-editor__form-btn"]}
+          onClick={() => fileInputRef.current?.click()}
+        >
+          <AttachIcon className={styles["content-editor__icon"]} />
+        </button>
+        <button
+          type="button"
+          className={styles["content-editor__form-btn"]}
+          onClick={handleSubmit}
+        >
+          <SendIcon className={styles["content-editor__icon"]} />
+        </button>
+        <input
+          hidden
+          ref={fileInputRef}
+          type="file"
+          accept="image/*,.pdf,.doc,.docx"
+          onChange={handleFileChange}
+        />
       </div>
-    </>
+
+      <div className={styles["content-editor__list"]}>
+        {updates.map((item) => (
+          <div key={item.id} className={styles["content-editor__list-item"]}>
+            {item.type === "text" && item.src && (
+              <TextItemEditor
+                item={item}
+                onSave={editContent}
+                onDelete={deleteContent}
+              />
+            )}
+            {item.type === "image" && item.src && (
+              <div className={styles["content-editor__media"]}>
+                <img
+                  src={item.src}
+                  alt={item.name}
+                  className={styles["content-editor__media-image"]}
+                  onClick={() => setModalImage(item.src!)}
+                />
+                <div className={styles["content-editor__controls"]}>
+                  <button
+                    type="button"
+                    onClick={() => deleteContent(item.id)}
+                    className={styles["content-editor__btn"]}
+                  >
+                    <TrashIcon className={styles["content-editor__icon"]} />
+                  </button>
+                </div>
+              </div>
+            )}
+            {item.type === "file" && item.src && (
+              <div className={styles["content-editor__media"]}>
+                <a
+                  href={item.src}
+                  download={item.name}
+                  className={styles["content-editor__media-file"]}
+                >
+                  {item.name}
+                </a>
+                <div className={styles["content-editor__controls"]}>
+                  <button
+                    type="button"
+                    onClick={() => deleteContent(item.id)}
+                    className={styles["content-editor__btn"]}
+                  >
+                    <TrashIcon className={styles["content-editor__icon"]} />
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+
+      {modalImage && (
+        <Modal isOpen={true} closeModal={() => setModalImage(null)}>
+          <img
+            src={modalImage}
+            alt="Modal"
+            className={styles["content-editor__modal-image"]}
+          />
+        </Modal>
+      )}
+    </div>
   );
 };
 

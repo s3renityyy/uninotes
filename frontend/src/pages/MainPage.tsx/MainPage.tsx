@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import styles from "./MainPage.module.scss";
 
 type Update = {
   section: string;
@@ -35,19 +36,21 @@ const MainPage: React.FC = () => {
   if (error) return <div>Ошибка: {error}</div>;
 
   return (
-    <div>
-      <h1>Последние обновления</h1>
-      <ul>
-        {updates.map((item) => (
-          <li key={`${item.section}-${item.type}`}>
-            <Link to={`/${item.section}/${item.type}`}>
-              <strong>{item.title}</strong> (Обновлено:{" "}
-              {new Date(item.updatedAt).toLocaleString()})
-            </Link>
-          </li>
-        ))}
-      </ul>
-    </div>
+    <>
+      <header className={styles.header}>Последние обновления</header>
+      <div className={styles.main__page}>
+        <ul className={styles["main__page-list"]}>
+          {updates.map((item) => (
+            <li key={`${item.section}-${item.type}`}>
+              <Link to={`/${item.section}/${item.type}`}>
+                <strong>{item.title}</strong> (Обновлено:{" "}
+                {new Date(item.updatedAt).toLocaleString()})
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </>
   );
 };
 

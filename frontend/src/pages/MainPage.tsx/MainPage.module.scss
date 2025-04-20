@@ -1,0 +1,20 @@
+.header {
+  height: 75px;
+  border-bottom: 2px solid #131416;
+  background-color: #101114;
+  text-align: center;
+  font-size: 30px;
+  padding-top: 10px;
+}
+
+.main__page {
+  margin-top: 15px;
+}
+
+.main__page-list {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  font-size: 20px;
+}

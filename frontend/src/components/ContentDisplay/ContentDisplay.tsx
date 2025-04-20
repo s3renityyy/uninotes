@@ -8,7 +8,6 @@ export interface ContentItem {
   type: "image" | "file" | "text";
   src?: string;
   name?: string;
-  file?: File;
 }
 
 const ContentDisplay: React.FC = () => {
@@ -32,52 +31,67 @@ const ContentDisplay: React.FC = () => {
         }));
 
         setUpdates(content.reverse());
-      } catch (err: any) {
+      } catch {
         setError("Ошибка загрузки");
       } finally {
         setLoading(false);
       }
     };
-
     fetchPage();
   }, [section, type]);
 
-  if (loading) return <div>Загрузка...</div>;
-  if (error) return <div>{error}</div>;
+  if (loading)
+    return (
+      <div className={styles["content-display__loading"]}>Загрузка...</div>
+    );
+  if (error)
+    return <div className={styles["content-display__error"]}>{error}</div>;
+
   return (
     <>
-      <div className={styles.contentDisplay}>
+      <header className={styles.header}>{section}</header>
+      <div className={styles["content-display"]}>
         {updates.map((item) => (
-          <div key={item.id} className={styles.contentCard}>
+          <div key={item.id} className={styles["content-display__card"]}>
             {item.type === "text" && item.src && (
-              <div style={{ whiteSpace: "pre-wrap" }}>{item.src}</div>
+              <div className={styles["content-display__text"]}>{item.src}</div>
             )}
+
             {item.type === "image" && item.src && (
-              <div className={styles["contentCard-image"]}>
+              <div className={styles["content-display__media"]}>
                 <img
                   src={item.src}
-                  className={styles.contentImage}
+                  className={styles["content-display__image"]}
                   onClick={() => setModalImage(item.src!)}
                   alt={item.name}
                 />
               </div>
             )}
+
             {item.type === "file" && item.src && (
-              <div className={styles["contentCard-image"]}>
-                <a className={styles.file} href={item.src} download={item.name}>
+              <div className={styles["content-display__media"]}>
+                <a
+                  className={styles["content-display__file"]}
+                  href={item.src}
+                  download={item.name}
+                >
                   {item.name}
                 </a>
               </div>
             )}
           </div>
         ))}
-      </div>
 
-      {modalImage && (
-        <Modal isOpen={true} closeModal={() => setModalImage(null)}>
-          <img src={modalImage} className={styles.fullImage} alt="Modal view" />
-        </Modal>
-      )}
+        {modalImage && (
+          <Modal isOpen closeModal={() => setModalImage(null)}>
+            <img
+              src={modalImage}
+              className={styles["content-display__modal-image"]}
+              alt="Modal view"
+            />
+          </Modal>
+        )}
+      </div>
     </>
   );
 };

@@ -36,10 +36,10 @@ const MenuComponent: React.FC<MenuComponentProps> = () => {
           label: "Обучение",
           children: routes.map((section: any) => ({
             key: section.key,
-            label: section.label,
+            label: section.children[0].label,
             children: section.children.map((child: any) => ({
               key: `/${section.key}/${child.key}`,
-              label: child.label,
+              label: child.key,
               onClick: () => navigate(`/${section.key}/${child.key}`),
             })),
           })),
