@@ -14,8 +14,6 @@ const MainPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  console.log(updates);
-
   useEffect(() => {
     const fetchUpdates = async () => {
       try {
@@ -45,7 +43,7 @@ const MainPage: React.FC = () => {
           {updates.map((item) => (
             <li key={`${item.section}-${item.type}`}>
               <Link to={`/${item.section}/${item.type}`}>
-                <strong>{`${item.title} ${item.type}`}</strong> (Обновлено:{" "}
+                <strong>{`${item.title} (${item.type})`}</strong> (Обновлено:{" "}
                 {new Date(item.updatedAt).toLocaleString()})
               </Link>
             </li>

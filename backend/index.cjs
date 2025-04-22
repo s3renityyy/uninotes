@@ -6,6 +6,7 @@ const helmet = require("helmet");
 const cors = require("cors");
 const rateLimit = require("express-rate-limit");
 const apiRoutes = require("./routes/api.cjs");
+const adminRoutes = require("./routes/admin.cjs");
 const cookieParser = require("cookie-parser");
 
 const app = express();
@@ -34,6 +35,7 @@ mongoose
   .then(() => console.log("Connected to MongoDB"))
   .catch((err) => console.error(err));
 
+app.use("/api", adminRoutes);
 app.use("/api", apiRoutes);
 const staticPath = path.join(__dirname, "..", "frontend", "dist");
 app.use(express.static(staticPath));

@@ -59,7 +59,7 @@ const AdminPage: React.FC<AdminPageProps> = () => {
       return;
     }
 
-    await fetch(`/api/${section}/${type}`, {
+    await fetch(`/api/admin/${section}/${type}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ title, content: [] }),
@@ -73,7 +73,7 @@ const AdminPage: React.FC<AdminPageProps> = () => {
   };
 
   const deleteRoute = async (section: string, type: string) => {
-    await fetch(`/api/${section}/${type}`, { method: "DELETE" });
+    await fetch(`/api/admin/${section}/${type}`, { method: "DELETE" });
     await fetchRoutes();
   };
 
@@ -92,7 +92,7 @@ const AdminPage: React.FC<AdminPageProps> = () => {
       alert("Section и Type может содержать латиницу, цифры и символы -_");
       return;
     }
-    const res = await fetch(`/api/${oldSection}/${oldType}`, {
+    const res = await fetch(`/api/admin/${oldSection}/${oldType}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({

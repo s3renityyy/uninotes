@@ -3,37 +3,8 @@ const router = express.Router();
 const Page = require("../models/Page.cjs");
 const { ObjectId } = require("mongoose").Types;
 const isAdminMiddleware = require("../middleware/adminAuth.cjs");
-const jwt = require("jsonwebtoken");
 
 const isValidRouteKey = (str) => /^[a-zA-Z0-9_-]+$/.test(str);
-
-router.get("/admin/me", isAdminMiddleware, (req, res) => {
-  res.json({ ok: true });
-});
-
-router.post("/admin/login", (req, res) => {
-  const { password } = req.body;
-  if (password === process.env.ADMIN_KEY) {
-    const tokenAdmin = jwt.sign(
-      { role: "admin" },
-      process.env.JWT_SECRET_ADMIN,
-      {
-        expiresIn: "1h",
-      }
-    );
-    res.cookie("tokenAdmin", tokenAdmin, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
-    });
-    return res.json({ success: true });
-  }
-  res.status(401).json({ success: false });
-});
-
-router.post("/admin/logout", (req, res) => {
-  res.clearCookie("tokenAdmin").json({ message: "Выход выполнен" });
-});
 
 router.get("/updates", async (req, res) => {
   try {
@@ -67,33 +38,42 @@ router.get("/:section/:type", async (req, res) => {
 
 router.post("/:section/:type", isAdminMiddleware, async (req, res) => {
   const { section, type } = req.params;
+  const { type: blockType, data, url, caption } = req.body;
+
   if (!isValidRouteKey(section) || !isValidRouteKey(type)) {
     return res.status(400).json({ error: "Некорректный section или type" });
   }
 
-  const { type: blockType, data, url, caption } = req.body;
-  const newBlock =
-    blockType && (data || url)
-      ? { type: blockType, data, url, caption, dateAdded: new Date() }
-      : null;
-
-  const update = {
-    $set: { title: req.body.title || type, updatedAt: new Date() },
-  };
-
-  if (newBlock) {
-    update.$push = { content: newBlock };
+  if (!blockType || (!data && !url)) {
+    return res.status(400).json({ error: "Неверные данные блока" });
   }
 
+  const newBlock = {
+    type: blockType,
+    data,
+    url,
+    caption,
+    dateAdded: new Date(),
+  };
+
   try {
-    const page = await Page.findOneAndUpdate({ section, type }, update, {
-      new: true,
-      upsert: true,
-    });
-    res.status(201).json({ message: "Content added", page });
+    const page = await Page.findOneAndUpdate(
+      { section, type },
+      {
+        $set: { updatedAt: new Date() },
+        $push: { content: newBlock },
+      },
+      { new: true }
+    );
+
+    if (!page) {
+      return res.status(404).json({ error: "Страница не найдена" });
+    }
+
+    res.status(201).json({ message: "Контент добавлен", page });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: "Internal Server Error" });
+    res.status(500).json({ error: "Внутренняя ошибка сервера" });
   }
 });
 
@@ -157,30 +137,5 @@ router.put(
     }
   }
 );
-
-router.delete("/:section/:type", isAdminMiddleware, async (req, res) => {
-  try {
-    await Page.deleteOne({
-      section: req.params.section,
-      type: req.params.type,
-    });
-    res.json({ message: "Роут удален" });
-  } catch (err) {
-    res.status(500).json({ error: "Internal Server Error" });
-  }
-});
-
-router.put("/:section/:type", isAdminMiddleware, async (req, res) => {
-  const { newSection, newType, newTitle } = req.body;
-  try {
-    await Page.updateOne(
-      { section: req.params.section, type: req.params.type },
-      { $set: { section: newSection, type: newType, title: newTitle } }
-    );
-    res.json({ message: "Роут обновлен" });
-  } catch (err) {
-    res.status(500).json({ error: "Internal Server Error" });
-  }
-});
 
 module.exports = router;

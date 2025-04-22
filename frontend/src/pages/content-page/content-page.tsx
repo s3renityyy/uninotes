@@ -37,7 +37,6 @@ const ContentPage: React.FC = () => {
         throw new Error("Не удалось загрузить страницу");
       }
       const data = await response.json();
-      console.log(data);
       setPage(data);
     } catch (err: any) {
       setError(err.message);
