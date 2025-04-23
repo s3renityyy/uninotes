@@ -26,10 +26,23 @@ app.use(
           "https://www.gstatic.com",
         ],
         frameSrc: ["'self'", "https://www.google.com"],
+        connectSrc: [
+          "'self'",
+          "https://www.google.com",
+          "https://www.gstatic.com",
+        ],
+        imgSrc: [
+          "'self'",
+          "https://www.google.com",
+          "https://www.gstatic.com",
+          "data:",
+        ],
+        styleSrc: ["'self'", "'unsafe-inline'"],
       },
     },
   })
 );
+
 app.use(
   cors({
     origin: process.env.FRONTEND_URL,
