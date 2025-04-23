@@ -3,6 +3,24 @@ import styles from "./ContentDisplay.module.scss";
 import Modal from "../Modal/Modal";
 import { useParams } from "react-router-dom";
 
+type ContentBlock = {
+  _id: string;
+  type: string;
+  data?: string;
+  url?: string;
+  caption?: string;
+  dateAdded?: string;
+};
+
+type PageData = {
+  section: string;
+  type: string;
+  sectionTitle: string;
+  typeTitle: string;
+  content: ContentBlock[];
+  updatedAt: string;
+};
+
 export interface ContentItem {
   id: string;
   type: "image" | "file" | "text";
@@ -16,6 +34,7 @@ const ContentDisplay: React.FC = () => {
   const [updates, setUpdates] = useState<ContentItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [page, setPage] = useState<PageData | null>(null);
 
   useEffect(() => {
     const fetchPage = async () => {
@@ -30,6 +49,7 @@ const ContentDisplay: React.FC = () => {
           name: block.caption || "",
         }));
 
+        setPage(data);
         setUpdates(content);
       } catch {
         setError("Ошибка загрузки");
@@ -49,7 +69,9 @@ const ContentDisplay: React.FC = () => {
 
   return (
     <>
-      <header className={styles.header}>{section}</header>
+      <header className={styles.header}>
+        {page && page.sectionTitle} ({page && page.typeTitle})
+      </header>
       <div className={styles["content-display"]}>
         {updates.map((item) => (
           <div key={item.id} className={styles["content-display__card"]}>
