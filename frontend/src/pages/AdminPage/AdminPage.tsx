@@ -9,7 +9,8 @@ import { useAdminStore } from "../../store/useAdminStore";
 interface EditingRoute {
   section: string;
   type: string;
-  title: string;
+  sectionTitle: string;
+  typeTitle: string;
 }
 
 interface AdminPageProps {}
@@ -17,7 +18,8 @@ interface AdminPageProps {}
 const AdminPage: React.FC<AdminPageProps> = () => {
   const [section, setSection] = useState("");
   const [type, setType] = useState("");
-  const [title, setTitle] = useState("");
+  const [sectionTitle, setSectionTitle] = useState("");
+  const [typeTitle, setTypeTitle] = useState("");
   const [newRoutes, setNewRoutes] = useState<PageRoute[]>();
   const { routes, fetchRoutes } = useRoutesStore();
   const navigate = useNavigate();
@@ -35,7 +37,8 @@ const AdminPage: React.FC<AdminPageProps> = () => {
         loadedRoutes.push({
           section: sec.key,
           type: child.key,
-          title: child.label,
+          sectionTitle: sec.label,
+          typeTitle: child.label,
         });
       });
     });
@@ -58,17 +61,17 @@ const AdminPage: React.FC<AdminPageProps> = () => {
       alert("Такой маршрут уже существует");
       return;
     }
-
     await fetch(`/api/admin/${section}/${type}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ title, content: [] }),
+      body: JSON.stringify({ sectionTitle, typeTitle, content: [] }),
     });
 
     await fetchRoutes().then(() => {
       setSection("");
       setType("");
-      setTitle("");
+      setSectionTitle("");
+      setTypeTitle("");
     });
   };
 
@@ -82,12 +85,14 @@ const AdminPage: React.FC<AdminPageProps> = () => {
     oldType: string,
     newSection: string,
     newType: string,
-    newTitle: string
+    newSectionTitle: string,
+    newTypeTitle: string
   ) => {
     if (
       !isValidRouteKey(newSection) ||
       !isValidRouteKey(newType) ||
-      !newTitle.trim()
+      !newSectionTitle.trim() ||
+      !newTypeTitle.trim()
     ) {
       alert("Section и Type может содержать латиницу, цифры и символы -_");
       return;
@@ -96,9 +101,10 @@ const AdminPage: React.FC<AdminPageProps> = () => {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        newSection,
-        newType,
-        newTitle,
+        section: newSection,
+        type: newType,
+        sectionTitle: newSectionTitle,
+        typeTitle: newTypeTitle,
       }),
     });
 
@@ -118,19 +124,24 @@ const AdminPage: React.FC<AdminPageProps> = () => {
           <div className={styles["admin-routes"]}>
             <div className={styles["route-form"]}>
               <input
-                placeholder="Section"
+                placeholder="Заголовок"
                 value={section}
                 onChange={(e) => setSection(e.target.value)}
               />
               <input
-                placeholder="Type"
+                placeholder="Тип"
                 value={type}
                 onChange={(e) => setType(e.target.value)}
               />
               <input
-                placeholder="Title"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
+                placeholder="Название заголовка"
+                value={sectionTitle}
+                onChange={(e) => setSectionTitle(e.target.value)}
+              />
+              <input
+                placeholder="Название типа"
+                value={typeTitle}
+                onChange={(e) => setTypeTitle(e.target.value)}
               />
               <Button type="button" onClick={addPage}>
                 Создать роут
@@ -169,9 +180,15 @@ const AdminPage: React.FC<AdminPageProps> = () => {
                           onChange={(e) => handleChange("type", e.target.value)}
                         />
                         <input
-                          value={editing.title}
+                          value={editing.sectionTitle}
                           onChange={(e) =>
-                            handleChange("title", e.target.value)
+                            handleChange("sectionTitle", e.target.value)
+                          }
+                        />
+                        <input
+                          value={editing.typeTitle}
+                          onChange={(e) =>
+                            handleChange("typeTitle", e.target.value)
                           }
                         />
                         <Button
@@ -181,7 +198,8 @@ const AdminPage: React.FC<AdminPageProps> = () => {
                               route.type,
                               editing.section,
                               editing.type,
-                              editing.title
+                              editing.sectionTitle,
+                              editing.typeTitle
                             )
                           }
                         >

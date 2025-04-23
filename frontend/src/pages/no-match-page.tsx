@@ -1,5 +1,13 @@
+import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+
 const NoMatchPage = () => {
-  return <span>Страница не найдена</span>;
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    navigate("/");
+  }, []);
+  return <></>;
 };
 
 export default NoMatchPage;

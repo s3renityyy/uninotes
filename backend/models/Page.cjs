@@ -4,7 +4,8 @@ const Schema = mongoose.Schema;
 const pageSchema = new Schema({
   section: String,
   type: String,
-  title: String,
+  sectionTitle: String,
+  typeTitle: String,
   content: [
     {
       type: { type: String, required: true },

@@ -6,7 +6,8 @@ import { useRoutesStore } from "./store/useRoutesStore";
 export interface PageRoute {
   section: string;
   type: string;
-  title: string;
+  sectionTitle: string;
+  typeTitle: string;
 }
 
 const App: React.FC = () => {

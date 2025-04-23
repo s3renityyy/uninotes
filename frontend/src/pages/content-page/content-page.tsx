@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import ContentEditor, {
   ContentItem,
 } from "../../components/ContentEditor/ContentEditor";
@@ -18,7 +18,8 @@ type ContentBlock = {
 type PageData = {
   section: string;
   type: string;
-  title: string;
+  sectionTitle: string;
+  typeTitle: string;
   content: ContentBlock[];
   updatedAt: string;
 };
@@ -28,13 +29,14 @@ const ContentPage: React.FC = () => {
   const [page, setPage] = useState<PageData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const navigate = useNavigate();
 
   const fetchPage = async () => {
     if (!section || !type) return;
     try {
       const response = await fetch(`/api/${section}/${type}`);
       if (!response.ok) {
-        throw new Error("Не удалось загрузить страницу");
+        navigate("/");
       }
       const data = await response.json();
       setPage(data);
@@ -62,7 +64,9 @@ const ContentPage: React.FC = () => {
 
   return (
     <div>
-      <header className={styles.header}>{page.title}</header>
+      <header
+        className={styles.header}
+      >{`${page.sectionTitle} (${page.typeTitle})`}</header>
       <RequireAuthAdmin path={`/${section}/${type}/show`}>
         <ContentEditor updates={contentItems} onContentAdded={fetchPage} />
       </RequireAuthAdmin>

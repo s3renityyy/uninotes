@@ -3,7 +3,8 @@ import { create } from "zustand";
 export interface PageRoute {
   section: string;
   type: string;
-  title: string;
+  sectionTitle: string;
+  typetitle: string;
 }
 
 interface RoutesState {

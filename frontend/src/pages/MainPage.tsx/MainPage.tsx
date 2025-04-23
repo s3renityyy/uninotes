@@ -5,7 +5,8 @@ import styles from "./MainPage.module.scss";
 type Update = {
   section: string;
   type: string;
-  title: string;
+  sectionTitle: string;
+  typeTitle: string;
   updatedAt: string;
 };
 
@@ -22,6 +23,7 @@ const MainPage: React.FC = () => {
           throw new Error("Не удалось загрузить обновления");
         }
         const data = await response.json();
+        console.log(data);
         setUpdates(data);
       } catch (err: any) {
         setError(err.message);
@@ -43,8 +45,8 @@ const MainPage: React.FC = () => {
           {updates.map((item) => (
             <li key={`${item.section}-${item.type}`}>
               <Link to={`/${item.section}/${item.type}`}>
-                <strong>{`${item.title} (${item.type})`}</strong> (Обновлено:{" "}
-                {new Date(item.updatedAt).toLocaleString()})
+                <strong>{`${item.sectionTitle} (${item.typeTitle})`}</strong>{" "}
+                (Обновлено: {new Date(item.updatedAt).toLocaleString()})
               </Link>
             </li>
           ))}

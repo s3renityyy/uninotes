@@ -8,7 +8,10 @@ const isValidRouteKey = (str) => /^[a-zA-Z0-9_-]+$/.test(str);
 
 router.get("/updates", async (req, res) => {
   try {
-    const updates = await Page.find({}, "section type title updatedAt").sort({
+    const updates = await Page.find(
+      {},
+      "section type sectionTitle typeTitle updatedAt"
+    ).sort({
       updatedAt: -1,
     });
     res.json(updates);
@@ -79,17 +82,19 @@ router.post("/:section/:type", isAdminMiddleware, async (req, res) => {
 
 router.get("/links", async (req, res) => {
   try {
-    const pages = await Page.find({}, "section type title").sort({
+    const pages = await Page.find(
+      {},
+      "section type sectionTitle typeTitle"
+    ).sort({
       updatedAt: -1,
     });
 
     const sections = {};
-    pages.forEach(({ section, type, title }) => {
-      const sectionUpper = section.toUpperCase();
+    pages.forEach(({ section, type, sectionTitle, typeTitle }) => {
       if (!sections[section]) {
-        sections[section] = { key: section, label: sectionUpper, children: [] };
+        sections[section] = { key: section, label: sectionTitle, children: [] };
       }
-      sections[section].children.push({ key: type, label: title });
+      sections[section].children.push({ key: type, label: typeTitle });
     });
 
     res.json(Object.values(sections));
