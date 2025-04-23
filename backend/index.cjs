@@ -15,7 +15,21 @@ app.set("trust proxy", 1);
 const PORT = process.env.PORT || 9000;
 const MONGODB_URI = process.env.MONGODB_URI;
 
-app.use(helmet());
+app.use(
+  helmet({
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        scriptSrc: [
+          "'self'",
+          "https://www.google.com",
+          "https://www.gstatic.com",
+        ],
+        frameSrc: ["'self'", "https://www.google.com"],
+      },
+    },
+  })
+);
 app.use(
   cors({
     origin: process.env.FRONTEND_URL,
