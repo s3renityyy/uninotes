@@ -86,7 +86,7 @@ router.post("/admin/login", loginLimiter, async (req, res) => {
       return res.status(400).json({ error: "Капча обязательна" });
     }
 
-    const verifyUrl = `https://www.google.com/recaptcha/api/siteverify?secret=${process.env.RECAPTCHA_SECRET_KEY_LOCAL}&response=${captchaToken}&remoteip=${ip}`;
+    const verifyUrl = `https://www.google.com/recaptcha/api/siteverify?secret=${process.env.RECAPTCHA_SECRET_KEY}&response=${captchaToken}&remoteip=${ip}`;
     const captchaRes = await fetch(verifyUrl, { method: "POST" });
     const captchaData = await captchaRes.json();
 
