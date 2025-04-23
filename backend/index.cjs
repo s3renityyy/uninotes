@@ -8,6 +8,7 @@ const rateLimit = require("express-rate-limit");
 const apiRoutes = require("./routes/api.cjs");
 const adminRoutes = require("./routes/admin.cjs");
 const cookieParser = require("cookie-parser");
+const csrf = require("csurf");
 
 const app = express();
 app.set("trust proxy", 1);
@@ -29,6 +30,18 @@ const limiter = rateLimit({
 });
 app.use(limiter);
 app.use(cookieParser());
+
+const csrfProtection = csrf({ cookie: true });
+app.use((req, res, next) => {
+  if (req.path === "/api/admin/login" || req.path === "/api/admin/logout") {
+    return next();
+  }
+  return csrfProtection(req, res, next);
+});
+
+app.get("/api/csrf-token", (req, res) => {
+  res.json({ csrfToken: req.csrfToken() });
+});
 
 mongoose
   .connect(MONGODB_URI)

@@ -1,5 +1,6 @@
-import React, { useState, useRef, ChangeEvent } from "react";
+import React, { useState, useRef, ChangeEvent, useEffect } from "react";
 import { useParams } from "react-router-dom";
+import DOMPurify from "dompurify";
 import styles from "./ContentEditor.module.scss";
 import Modal from "../Modal/Modal";
 import TextareaAutosize from "react-textarea-autosize";
@@ -72,7 +73,12 @@ const TextItemEditor: React.FC<{
         </>
       ) : (
         <>
-          <div style={{ whiteSpace: "pre-wrap" }}>{item.src}</div>
+          <div
+            style={{ whiteSpace: "pre-wrap" }}
+            dangerouslySetInnerHTML={{
+              __html: DOMPurify.sanitize(item.src || ""),
+            }}
+          />
           <div className={styles["content-editor__controls"]}>
             <button
               type="button"
@@ -102,8 +108,15 @@ const ContentEditor: React.FC<ContentEditorType> = ({
   const { section, type } = useParams<{ section: string; type: string }>();
   const [newText, setNewText] = useState("");
   const [modalImage, setModalImage] = useState<string | null>(null);
+  const [csrfToken, setCsrfToken] = useState("");
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [isErrorInput, setIsErrorInput] = useState(false);
+
+  useEffect(() => {
+    fetch("/api/csrf-token", { credentials: "include" })
+      .then((res) => res.json())
+      .then((data) => setCsrfToken(data.csrfToken));
+  }, []);
 
   const handleSubmit = async () => {
     const trimmed = newText.trim();
@@ -112,13 +125,18 @@ const ContentEditor: React.FC<ContentEditorType> = ({
       return;
     }
     setIsErrorInput(false);
-
     if (!section || !type) return;
+
     await fetch(`/api/${section}/${type}`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+        "CSRF-Token": csrfToken,
+      },
       body: JSON.stringify({ type: "text", data: trimmed }),
     });
+
     setNewText("");
     onContentAdded();
   };
@@ -130,7 +148,11 @@ const ContentEditor: React.FC<ContentEditorType> = ({
     reader.onload = async () => {
       await fetch(`/api/${section}/${type}`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+          "CSRF-Token": csrfToken,
+        },
         body: JSON.stringify({
           type: file.type.startsWith("image/") ? "image" : "file",
           url: reader.result,
@@ -145,7 +167,11 @@ const ContentEditor: React.FC<ContentEditorType> = ({
 
   const deleteContent = async (id: string) => {
     if (!section || !type) return;
-    await fetch(`/api/${section}/${type}/${id}`, { method: "DELETE" });
+    await fetch(`/api/${section}/${type}/${id}`, {
+      method: "DELETE",
+      credentials: "include",
+      headers: { "CSRF-Token": csrfToken },
+    });
     onContentAdded();
   };
 
@@ -153,7 +179,11 @@ const ContentEditor: React.FC<ContentEditorType> = ({
     if (!section || !type) return;
     await fetch(`/api/${section}/${type}/${id}`, {
       method: "PUT",
-      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+        "CSRF-Token": csrfToken,
+      },
       body: JSON.stringify({ data, caption: "" }),
     });
     onContentAdded();

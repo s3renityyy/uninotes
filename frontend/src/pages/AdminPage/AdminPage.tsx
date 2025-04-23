@@ -13,9 +13,7 @@ interface EditingRoute {
   typeTitle: string;
 }
 
-interface AdminPageProps {}
-
-const AdminPage: React.FC<AdminPageProps> = () => {
+const AdminPage: React.FC = () => {
   const [section, setSection] = useState("");
   const [type, setType] = useState("");
   const [sectionTitle, setSectionTitle] = useState("");
@@ -26,12 +24,12 @@ const AdminPage: React.FC<AdminPageProps> = () => {
   const [editingRoutes, setEditingRoutes] = useState<
     Record<string, EditingRoute>
   >({});
+  const [csrfToken, setCsrfToken] = useState("");
 
   const isValidRouteKey = (key: string) => /^[a-zA-Z0-9_-]+$/.test(key);
 
   useEffect(() => {
     const loadedRoutes: PageRoute[] = [];
-
     routes.forEach((sec: any) => {
       sec.children.forEach((child: any) => {
         loadedRoutes.push({
@@ -42,12 +40,21 @@ const AdminPage: React.FC<AdminPageProps> = () => {
         });
       });
     });
-
     setNewRoutes(loadedRoutes);
   }, [routes]);
 
+  useEffect(() => {
+    fetch("/api/csrf-token", { credentials: "include" })
+      .then((res) => res.json())
+      .then((data) => setCsrfToken(data.csrfToken));
+  }, []);
+
   const handleLogout = async () => {
-    await fetch("/api/admin/logout", { method: "POST" });
+    await fetch("/api/admin/logout", {
+      method: "POST",
+      credentials: "include",
+      headers: { "CSRF-Token": csrfToken },
+    });
     useAdminStore.setState({ isAdmin: null });
     navigate("/admin/login");
   };
@@ -63,20 +70,26 @@ const AdminPage: React.FC<AdminPageProps> = () => {
     }
     await fetch(`/api/admin/${section}/${type}`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+        "CSRF-Token": csrfToken,
+      },
       body: JSON.stringify({ sectionTitle, typeTitle, content: [] }),
     });
-
-    await fetchRoutes().then(() => {
-      setSection("");
-      setType("");
-      setSectionTitle("");
-      setTypeTitle("");
-    });
+    await fetchRoutes();
+    setSection("");
+    setType("");
+    setSectionTitle("");
+    setTypeTitle("");
   };
 
   const deleteRoute = async (section: string, type: string) => {
-    await fetch(`/api/admin/${section}/${type}`, { method: "DELETE" });
+    await fetch(`/api/admin/${section}/${type}`, {
+      method: "DELETE",
+      credentials: "include",
+      headers: { "CSRF-Token": csrfToken },
+    });
     await fetchRoutes();
   };
 
@@ -99,7 +112,11 @@ const AdminPage: React.FC<AdminPageProps> = () => {
     }
     const res = await fetch(`/api/admin/${oldSection}/${oldType}`, {
       method: "PUT",
-      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+        "CSRF-Token": csrfToken,
+      },
       body: JSON.stringify({
         section: newSection,
         type: newType,
@@ -112,117 +129,116 @@ const AdminPage: React.FC<AdminPageProps> = () => {
       console.error("Ошибка при обновлении роута:", await res.text());
       return;
     }
-
     await fetchRoutes();
+    setEditingRoutes({});
   };
 
   return (
     <>
       <header className={styles.header}>Панель администрирования</header>
       <div className={styles.admin}>
-        <>
-          <div className={styles["admin-routes"]}>
-            <div className={styles["route-form"]}>
-              <input
-                placeholder="Заголовок"
-                value={section}
-                onChange={(e) => setSection(e.target.value)}
-              />
-              <input
-                placeholder="Тип"
-                value={type}
-                onChange={(e) => setType(e.target.value)}
-              />
-              <input
-                placeholder="Название заголовка"
-                value={sectionTitle}
-                onChange={(e) => setSectionTitle(e.target.value)}
-              />
-              <input
-                placeholder="Название типа"
-                value={typeTitle}
-                onChange={(e) => setTypeTitle(e.target.value)}
-              />
-              <Button type="button" onClick={addPage}>
-                Создать роут
-              </Button>
-            </div>
-            <div className={styles["admin-routes-list"]}>
-              <div className={styles["admin-routes-list-item"]}>
-                {newRoutes &&
-                  newRoutes.map((route) => {
-                    const key = `${route.section}-${route.type}`;
-                    const editing = editingRoutes[key] || route;
+        <div className={styles["admin-routes"]}>
+          <div className={styles["route-form"]}>
+            <input
+              placeholder="Заголовок"
+              value={section}
+              onChange={(e) => setSection(e.target.value)}
+            />
+            <input
+              placeholder="Тип"
+              value={type}
+              onChange={(e) => setType(e.target.value)}
+            />
+            <input
+              placeholder="Название заголовка"
+              value={sectionTitle}
+              onChange={(e) => setSectionTitle(e.target.value)}
+            />
+            <input
+              placeholder="Название типа"
+              value={typeTitle}
+              onChange={(e) => setTypeTitle(e.target.value)}
+            />
+            <Button type="button" onClick={addPage}>
+              Создать роут
+            </Button>
+          </div>
 
-                    const handleChange = (
-                      field: keyof EditingRoute,
-                      value: string
-                    ) => {
-                      setEditingRoutes((prev) => ({
-                        ...prev,
-                        [key]: {
-                          ...editing,
-                          [field]: value,
-                        },
-                      }));
-                    };
+          <div className={styles["admin-routes-list"]}>
+            <div className={styles["admin-routes-list-item"]}>
+              {newRoutes &&
+                newRoutes.map((route) => {
+                  const key = `${route.section}-${route.type}`;
+                  const editing = editingRoutes[key] || route;
 
-                    return (
-                      <div key={key} className={styles.routeItem}>
-                        <input
-                          value={editing.section}
-                          onChange={(e) =>
-                            handleChange("section", e.target.value)
-                          }
-                        />
-                        <input
-                          value={editing.type}
-                          onChange={(e) => handleChange("type", e.target.value)}
-                        />
-                        <input
-                          value={editing.sectionTitle}
-                          onChange={(e) =>
-                            handleChange("sectionTitle", e.target.value)
-                          }
-                        />
-                        <input
-                          value={editing.typeTitle}
-                          onChange={(e) =>
-                            handleChange("typeTitle", e.target.value)
-                          }
-                        />
-                        <Button
-                          onClick={() =>
-                            editRoute(
-                              route.section,
-                              route.type,
-                              editing.section,
-                              editing.type,
-                              editing.sectionTitle,
-                              editing.typeTitle
-                            )
-                          }
-                        >
-                          Изменить
-                        </Button>
-                        <Button
-                          onClick={() => deleteRoute(route.section, route.type)}
-                        >
-                          Удалить
-                        </Button>
-                      </div>
-                    );
-                  })}
-              </div>
+                  const handleChange = (
+                    field: keyof EditingRoute,
+                    value: string
+                  ) => {
+                    setEditingRoutes((prev) => ({
+                      ...prev,
+                      [key]: {
+                        ...editing,
+                        [field]: value,
+                      },
+                    }));
+                  };
+
+                  return (
+                    <div key={key} className={styles.routeItem}>
+                      <input
+                        value={editing.section}
+                        onChange={(e) =>
+                          handleChange("section", e.target.value)
+                        }
+                      />
+                      <input
+                        value={editing.type}
+                        onChange={(e) => handleChange("type", e.target.value)}
+                      />
+                      <input
+                        value={editing.sectionTitle}
+                        onChange={(e) =>
+                          handleChange("sectionTitle", e.target.value)
+                        }
+                      />
+                      <input
+                        value={editing.typeTitle}
+                        onChange={(e) =>
+                          handleChange("typeTitle", e.target.value)
+                        }
+                      />
+                      <Button
+                        onClick={() =>
+                          editRoute(
+                            route.section,
+                            route.type,
+                            editing.section,
+                            editing.type,
+                            editing.sectionTitle,
+                            editing.typeTitle
+                          )
+                        }
+                      >
+                        Изменить
+                      </Button>
+                      <Button
+                        onClick={() => deleteRoute(route.section, route.type)}
+                      >
+                        Удалить
+                      </Button>
+                    </div>
+                  );
+                })}
             </div>
           </div>
-        </>
+        </div>
 
         <div className={styles["admin-form"]}>
           <div className={styles["admin-form-enabled"]}>
             Вы администратор!
             <Button
-              onClick={() => handleLogout()}
+              onClick={handleLogout}
               className={styles["admin-form-disabled-button"]}
             >
               Выйти

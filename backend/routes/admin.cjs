@@ -4,8 +4,11 @@ const isAdminMiddleware = require("../middleware/adminAuth.cjs");
 const router = express.Router();
 const Page = require("../models/Page.cjs");
 const crypto = require("crypto");
+const rateLimit = require("express-rate-limit");
 
 const isValidRouteKey = (str) => /^[a-zA-Z0-9_-]+$/.test(str);
+
+const attemptsByIP = new Map();
 
 router.put("/admin/:section/:type", isAdminMiddleware, async (req, res) => {
   const { section, type, sectionTitle, typeTitle } = req.body;
@@ -60,10 +63,41 @@ router.get("/admin/me", isAdminMiddleware, (req, res) => {
   res.json({ ok: true });
 });
 
-router.post("/admin/login", (req, res) => {
-  const { password } = req.body;
+const loginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 10,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: "Слишком много попыток входа. Попробуйте позже." },
+});
+
+router.post("/admin/login", loginLimiter, async (req, res) => {
+  const { password, captchaToken } = req.body;
+  const ip = req.ip;
+
+  const attempts = attemptsByIP.get(ip) || 0;
+
+  if (attempts >= 5) {
+    return res.status(429).json({ error: "IP временно заблокирован" });
+  }
+
+  if (attempts >= 3) {
+    if (!captchaToken) {
+      return res.status(400).json({ error: "Капча обязательна" });
+    }
+
+    const verifyUrl = `https://www.google.com/recaptcha/api/siteverify?secret=${process.env.RECAPTCHA_SECRET_KEY_LOCAL}&response=${captchaToken}&remoteip=${ip}`;
+    const captchaRes = await fetch(verifyUrl, { method: "POST" });
+    const captchaData = await captchaRes.json();
+
+    if (!captchaData.success) {
+      return res.status(403).json({ error: "Капча не пройдена" });
+    }
+  }
 
   if (password === process.env.ADMIN_KEY) {
+    attemptsByIP.delete(ip);
+
     const adminKeyHash = crypto
       .createHash("sha256")
       .update(password)
@@ -84,7 +118,13 @@ router.post("/admin/login", (req, res) => {
     return res.json({ success: true });
   }
 
-  res.status(401).json({ success: false });
+  attemptsByIP.set(ip, attempts + 1);
+
+  if (attempts + 1 === 5) {
+    setTimeout(() => attemptsByIP.delete(ip), 10 * 60 * 1000);
+  }
+
+  return res.status(401).json({ success: false });
 });
 
 router.post("/admin/logout", (req, res) => {
