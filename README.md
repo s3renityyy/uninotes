@@ -13,13 +13,13 @@ RECAPTCHA_SECRET_KEY_LOCAL=6LeJmyErAAAAAO8VeUAX0bxg8vLIp1P-WFKT2d0R
 VITE_BACKEND_URL=http://localhost:9000
 VITE_RECAPTCHA_SITE_KEY_LOCAL=6LeJmyErAAAAAGSTwh3LkMW8om7xh4WQ_1hoBeRI
 
-В корневой директории пишем
-**npm i**
-**npm run start**
+###В корневой директории пишем
+* npm i
+* npm run start
 
-Открываем новый терминал и пишем
-**cd frontend**
-**npm i**
-**npm run dev**
+###Открываем новый терминал и пишем
+* cd frontend
+* npm i
+* npm run dev
 
 Сервер будет запущен на localhost:5173
