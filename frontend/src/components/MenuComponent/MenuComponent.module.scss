@@ -29,49 +29,48 @@
   white-space: nowrap;
   text-overflow: ellipsis;
   position: fixed;
-  background-color: #0d0e10f0; // чуть прозрачнее
-  backdrop-filter: blur(6px); // можно и 10px
+  background-color: #0d0e10f0;
+  backdrop-filter: blur(3px);
   box-shadow: -4px 0 12px rgba(0, 0, 0, 0.6);
   width: 250px;
   display: flex;
   justify-content: space-between;
   flex-direction: column;
-  transition: all 0.3s;
   top: 0;
   left: 0;
   height: 100vh;
-  transition: opacity 0.2s ease, transform 0.5s ease, width 0.5s ease;
+  transition: transform 0.4s ease, opacity 0.3s ease;
   z-index: 1000;
   border-right: 2px solid #131416;
 
   &.collapsed {
-    width: 0px;
+    transform: translateX(-100%);
 
-    .menuLabel span {
+    .menuLabel {
       display: none;
     }
   }
 
   @media (max-width: 768px) {
     width: 100%;
-    background-color: #0d0e10f0; // чуть прозрачнее
-    backdrop-filter: blur(6px); // можно и 10px
-    box-shadow: -4px 0 12px rgba(0, 0, 0, 0.6); // свет от правого края
-    max-height: 45vh;
-    position: fixed;
-    top: 0;
+    height: auto;
+    max-height: 50vh;
+    left: 0;
     right: 0;
-    left: auto;
-    bottom: auto;
-    border-top: none;
-    border-left: 2px solid #131416;
-    transform: translateX(0);
-    transition: opacity 0.2s ease, transform 0.5s ease, width 0.5s ease;
-    z-index: 1000;
+    top: 0;
+    border-right: none;
+    border-bottom: 2px solid #131416;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
+    transform: translateY(-100%);
+    transition: opacity 0.5s ease, transform 0.5s ease;
 
     &.collapsed {
-      transform: translateX(100%);
-      overflow: hidden;
+      transform: translateY(-100%);
+    }
+
+    &:not(.collapsed) {
+      transform: translateY(0);
+      opacity: 1;
     }
   }
 }
@@ -142,6 +141,13 @@
   overflow-y: auto;
 }
 
+.mobileButtonWrapper {
+  position: fixed;
+  top: 12px;
+  right: 12px;
+  z-index: 9999;
+}
+
 .collapseButtonMobile {
   position: fixed;
   top: 12px;
@@ -165,16 +171,16 @@
 
   @media (max-width: 768px) {
     display: flex;
+
     &.collapseButtonMobile-collapsed {
       display: none;
     }
   }
 }
 
-// Кнопка для десктопа (как раньше)
 .collapseButtonDesktop {
   position: absolute;
-  right: -40px;
+  right: -42px;
   top: 50%;
   transform: translateY(-50%);
   width: 40px;

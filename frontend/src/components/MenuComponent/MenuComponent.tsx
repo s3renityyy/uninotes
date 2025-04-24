@@ -110,22 +110,20 @@ const MenuComponent: React.FC<MenuComponentProps> = () => {
         <div className={styles.overlay} onClick={() => setCollapsed(true)} />
       )}
       <div className={styles.layoutContainer}>
-        {/* Мобильная кнопка (видна ТОЛЬКО на мобилке) */}
-        <Button
-          className={`${styles.collapseButtonMobile} ${
-            !collapsed && styles["collapseButtonMobile-collapsed"]
-          }`}
-          onClick={() => setCollapsed(!collapsed)}
-        >
-          {collapsed ? "☰" : "✕"}
-        </Button>
+        <div className={styles.mobileButtonWrapper}>
+          <Button
+            className={styles.collapseButtonMobile}
+            onClick={() => setCollapsed(!collapsed)}
+          >
+            {collapsed ? "☰" : "✕"}
+          </Button>
+        </div>
 
         <aside
           className={`${styles.sidebar} ${collapsed ? styles.collapsed : ""}`}
         >
           <nav className={styles.menu}>{renderMenuItems(menuItems)}</nav>
 
-          {/* Десктопная кнопка (внутри сайдбара) */}
           <Button
             className={styles.collapseButtonDesktop}
             onClick={() => setCollapsed(!collapsed)}
