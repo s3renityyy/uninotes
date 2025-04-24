@@ -20,18 +20,23 @@
   border: 1px solid #2a2a2a;
   border-radius: 4px;
   padding: 16px;
-  width: 70%;
+  width: 80%;
   box-sizing: border-box;
+
+  @media (max-width: 768px) {
+    max-width: 95%;
+  }
 }
 
 .content-display__text {
   white-space: pre-wrap;
+  overflow-wrap: break-word;
+  word-break: break-word;
 }
 
 .content-display__media {
   display: flex;
   justify-content: center;
-  margin-top: 12px;
 }
 
 .content-display__image {
@@ -63,4 +68,8 @@
   text-align: center;
   font-size: 30px;
   padding-top: 10px;
+
+  @media (max-width: 768px) {
+    font-size: 20px;
+  }
 }

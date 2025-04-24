@@ -74,7 +74,7 @@ const TextItemEditor: React.FC<{
       ) : (
         <>
           <div
-            style={{ whiteSpace: "pre-wrap" }}
+            className={styles["content-editor__text"]}
             dangerouslySetInnerHTML={{
               __html: DOMPurify.sanitize(item.src || ""),
             }}

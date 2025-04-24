@@ -1,5 +1,8 @@
 # Шаги для запуска
 
+Нужно заменить RECAPTCHA_SECRET_KEY на RECAPTCHA_SECRET_KEY_LOCAL
+Нужно заменить VITE_RECAPTCHA_SITE_KEY на VITE_RECAPTCHA_SITE_KEY_LOCAL
+
 Создаем в корневой директории файл .env и заполняем в точности так:
 
 MONGODB_URI=mongodb+srv://Uninotes:dowahjdiuwahdiuh821y3e8qhwsidha@uninotes.f0rahbp.mongodb.net/

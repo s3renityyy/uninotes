@@ -23,7 +23,6 @@ const MainPage: React.FC = () => {
           throw new Error("Не удалось загрузить обновления");
         }
         const data = await response.json();
-        console.log(data);
         setUpdates(data);
       } catch (err: any) {
         setError(err.message);

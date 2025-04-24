@@ -15,7 +15,7 @@ interface MenuItem {
 interface MenuComponentProps {}
 
 const MenuComponent: React.FC<MenuComponentProps> = () => {
-  const [collapsed, setCollapsed] = useState<boolean>(false);
+  const [collapsed, setCollapsed] = useState<boolean>(true);
   const [openKeys, setOpenKeys] = useState<string[]>(["study"]);
   const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
   const routes = useRoutesStore((s) => s.routes);
@@ -29,7 +29,10 @@ const MenuComponent: React.FC<MenuComponentProps> = () => {
         {
           key: "/",
           label: "Главная",
-          onClick: () => navigate("/"),
+          onClick: () => {
+            setCollapsed(true);
+            navigate("/");
+          },
         },
         {
           key: "study",
@@ -40,14 +43,20 @@ const MenuComponent: React.FC<MenuComponentProps> = () => {
             children: section.children.map((child: any) => ({
               key: `/${section.key}/${child.key}`,
               label: child.label,
-              onClick: () => navigate(`/${section.key}/${child.key}`),
+              onClick: () => {
+                setCollapsed(true);
+                navigate(`/${section.key}/${child.key}`);
+              },
             })),
           })),
         },
         {
           key: "admin",
           label: "Панель админа",
-          onClick: () => navigate("/admin"),
+          onClick: () => {
+            setCollapsed(true);
+            navigate("/admin");
+          },
         },
       ];
       setMenuItems(transformed);
@@ -75,7 +84,11 @@ const MenuComponent: React.FC<MenuComponentProps> = () => {
             >
               {item.label}
               {item.children && (
-                <span className={styles.arrow}>
+                <span
+                  className={`${styles.arrow} ${
+                    openKeys.includes(item.key) ? styles.open : styles.closed
+                  }`}
+                >
                   {openKeys.includes(item.key) ? "▼" : "▶"}
                 </span>
               )}
@@ -92,24 +105,42 @@ const MenuComponent: React.FC<MenuComponentProps> = () => {
   );
 
   return (
-    <div className={styles.layoutContainer}>
-      <aside
-        className={`${styles.sidebar} ${collapsed ? styles.collapsed : ""}`}
-      >
-        <nav className={styles.menu}>{renderMenuItems(menuItems)}</nav>
+    <>
+      {!collapsed && (
+        <div className={styles.overlay} onClick={() => setCollapsed(true)} />
+      )}
+      <div className={styles.layoutContainer}>
+        {/* Мобильная кнопка (видна ТОЛЬКО на мобилке) */}
         <Button
-          className={styles.collapseButton}
+          className={`${styles.collapseButtonMobile} ${
+            !collapsed && styles["collapseButtonMobile-collapsed"]
+          }`}
           onClick={() => setCollapsed(!collapsed)}
         >
-          {collapsed ? "⭢" : "⭠"}
+          {collapsed ? "☰" : "✕"}
         </Button>
-      </aside>
-      <main className={styles.mainContent}>
-        <div className={styles.content}>
-          <AppRoutes />
-        </div>
-      </main>
-    </div>
+
+        <aside
+          className={`${styles.sidebar} ${collapsed ? styles.collapsed : ""}`}
+        >
+          <nav className={styles.menu}>{renderMenuItems(menuItems)}</nav>
+
+          {/* Десктопная кнопка (внутри сайдбара) */}
+          <Button
+            className={styles.collapseButtonDesktop}
+            onClick={() => setCollapsed(!collapsed)}
+          >
+            {collapsed ? "⭢" : "⭠"}
+          </Button>
+        </aside>
+
+        <main className={styles.mainContent}>
+          <div className={styles.content}>
+            <AppRoutes />
+          </div>
+        </main>
+      </div>
+    </>
   );
 };
 
