@@ -109,16 +109,17 @@ const MenuComponent: React.FC<MenuComponentProps> = () => {
       {!collapsed && (
         <div className={styles.overlay} onClick={() => setCollapsed(true)} />
       )}
-      <div className={styles.layoutContainer}>
-        <div className={styles.mobileButtonWrapper}>
-          <Button
-            className={styles.collapseButtonMobile}
-            onClick={() => setCollapsed(!collapsed)}
-          >
-            {collapsed ? "☰" : "✕"}
-          </Button>
-        </div>
 
+      <div className={styles.mobileButtonWrapper}>
+        <Button
+          className={styles.collapseButtonMobile}
+          onClick={() => setCollapsed(!collapsed)}
+        >
+          {collapsed ? "☰" : "✕"}
+        </Button>
+      </div>
+
+      <div className={styles.layoutContainer}>
         <aside
           className={`${styles.sidebar} ${collapsed ? styles.collapsed : ""}`}
         >
