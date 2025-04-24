@@ -67,7 +67,7 @@ const AdminLoginPage = () => {
         {showCaptcha && (
           <ReCAPTCHA
             ref={recaptchaRef}
-            sitekey={import.meta.env.VITE_RECAPTCHA_SITE_KEY}
+            sitekey={import.meta.env.VITE_RECAPTCHA_SITE_KEY_LOCAL}
             onChange={(token: any) => setCaptchaToken(token)}
             className={styles["admin-form-disabled-captcha"]}
           />
