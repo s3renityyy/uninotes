@@ -38,8 +38,7 @@ const AdminLoginPage = () => {
       if (recaptchaRef.current) {
         recaptchaRef.current.reset();
       }
-
-      alert("Ошибка входа");
+      //
     }
   };
 
@@ -64,6 +63,9 @@ const AdminLoginPage = () => {
         >
           Войти
         </Button>
+        {errorCount !== 0 && (
+          <div className={styles.error}>Неправильный пароль</div>
+        )}
         {showCaptcha && (
           <ReCAPTCHA
             ref={recaptchaRef}
