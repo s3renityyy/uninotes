@@ -2,6 +2,8 @@ import React, { useEffect, useState } from "react";
 import styles from "./ContentDisplay.module.scss";
 import Modal from "../Modal/Modal";
 import { useParams } from "react-router-dom";
+import { ContentItem } from "../ContentEditor/ContentEditor";
+import eStyles from "./ContentDisplay.module.scss";
 
 type ContentBlock = {
   _id: string;
@@ -21,13 +23,6 @@ type PageData = {
   updatedAt: string;
 };
 
-export interface ContentItem {
-  id: string;
-  type: "image" | "file" | "text";
-  src?: string;
-  name?: string;
-}
-
 const ContentDisplay: React.FC = () => {
   const [modalImage, setModalImage] = useState<string | null>(null);
   const { section, type } = useParams();
@@ -42,11 +37,11 @@ const ContentDisplay: React.FC = () => {
         const res = await fetch(`/api/${section}/${type}`);
         const data = await res.json();
 
-        const content: ContentItem[] = data.content.map((block: any) => ({
-          id: block._id,
-          type: block.type,
-          src: block.data || block.url || "",
-          name: block.caption || "",
+        const content: ContentItem[] = data.content.map((b: any) => ({
+          id: b._id,
+          text: b.text || "",
+          files: b.files || [],
+          dateAdded: b.dateAdded,
         }));
 
         setPage(data);
@@ -72,48 +67,66 @@ const ContentDisplay: React.FC = () => {
       <header className={styles.header}>
         {page && page.sectionTitle} ({page && page.typeTitle})
       </header>
-      <div className={styles["content-display"]}>
-        {updates.map((item) => (
-          <div key={item.id} className={styles["content-display__card"]}>
-            {item.type === "text" && item.src && (
-              <div className={styles["content-display__text"]}>{item.src}</div>
-            )}
+      <div className={eStyles["content-editor__list"]}>
+        {updates.map((block) => {
+          const text = block.text;
+          const files = block.files || [];
+          const images = files.filter((f: any) => f.type === "image");
+          const other = files.filter((f: any) => f.type !== "image");
 
-            {item.type === "image" && item.src && (
-              <div className={styles["content-display__media"]}>
-                <img
-                  src={item.src}
-                  className={styles["content-display__image"]}
-                  onClick={() => setModalImage(item.src!)}
-                  alt={item.name}
-                />
+          return (
+            <div key={block.id} className={styles["content-editor__list-item"]}>
+              <div className={styles["content-editor__item-body"]}>
+                {text && (
+                  <div className={styles["content-editor__text"]}>
+                    {block.text}
+                  </div>
+                )}
+
+                {images.length > 0 && (
+                  <div className={styles["content-editor__images-row"]}>
+                    {images.map((img, i) => (
+                      <div key={i} className={styles["content-editor__media"]}>
+                        <img
+                          src={img.url}
+                          alt={img.caption}
+                          className={eStyles["content-editor__media-image"]}
+                          onClick={() => setModalImage(img.url)}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {other.length > 0 && (
+                  <div className={styles["content-editor__files-col"]}>
+                    {other.map((f, i) => (
+                      <div key={i} className={styles["content-editor__media"]}>
+                        <a
+                          href={f.url}
+                          download={f.caption}
+                          className={styles["content-editor__media-file"]}
+                        >
+                          {f.caption}
+                        </a>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
-            )}
-
-            {item.type === "file" && item.src && (
-              <div className={styles["content-display__media"]}>
-                <a
-                  className={styles["content-display__file"]}
-                  href={item.src}
-                  download={item.name}
-                >
-                  {item.name}
-                </a>
-              </div>
-            )}
-          </div>
-        ))}
-
-        {modalImage && (
-          <Modal isOpen closeModal={() => setModalImage(null)}>
-            <img
-              src={modalImage}
-              className={styles["content-display__modal-image"]}
-              alt="Modal view"
-            />
-          </Modal>
-        )}
+            </div>
+          );
+        })}
       </div>
+
+      {modalImage && (
+        <Modal isOpen closeModal={() => setModalImage(null)}>
+          <img
+            src={modalImage}
+            className={styles["content-editor__modal-image"]}
+          />
+        </Modal>
+      )}
     </>
   );
 };

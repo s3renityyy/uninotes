@@ -5,14 +5,13 @@ import ContentEditor, {
 } from "../../components/ContentEditor/ContentEditor";
 import styles from "./content-page.module.scss";
 import RequireAuthAdmin from "../../components/RequireAuthAdmin";
+import { FileItem } from "../../components/ContentEditor/ContentEditor";
 
 type ContentBlock = {
-  _id: string;
-  type: string;
-  data?: string;
-  url?: string;
-  caption?: string;
-  dateAdded?: string;
+  id: string;
+  dateAdded: string;
+  files?: FileItem[];
+  text?: string;
 };
 
 type PageData = {
@@ -22,6 +21,7 @@ type PageData = {
   typeTitle: string;
   content: ContentBlock[];
   updatedAt: string;
+  _id: string;
 };
 
 const ContentPage: React.FC = () => {
@@ -56,10 +56,10 @@ const ContentPage: React.FC = () => {
   if (!page) return <div>Страница не найдена</div>;
 
   const contentItems: ContentItem[] = page.content.map((block) => ({
-    id: block._id,
-    type: block.type as "text" | "image" | "file",
-    src: block.data || block.url || "",
-    name: block.caption || "",
+    id: block.id,
+    dateAdded: block.dateAdded,
+    text: block.text,
+    files: block.files,
   }));
 
   return (

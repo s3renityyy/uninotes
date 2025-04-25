@@ -38,7 +38,6 @@ const AdminLoginPage = () => {
       if (recaptchaRef.current) {
         recaptchaRef.current.reset();
       }
-      //
     }
   };
 

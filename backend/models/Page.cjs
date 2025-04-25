@@ -8,11 +8,15 @@ const pageSchema = new Schema({
   typeTitle: String,
   content: [
     {
-      type: { type: String, required: true },
-      data: String,
-      url: String,
-      caption: String,
       dateAdded: { type: Date, default: Date.now },
+      text: String,
+      files: [
+        {
+          type: { type: String, required: true },
+          url: String,
+          caption: String,
+        },
+      ],
     },
   ],
   updatedAt: { type: Date, default: Date.now },
